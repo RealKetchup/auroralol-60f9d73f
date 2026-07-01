@@ -224,8 +224,33 @@ function Dashboard() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 grid lg:grid-cols-[1fr_340px] gap-6">
         <div className="space-y-6">
+          {/* Themes */}
+          <Section title="// THEME PRESETS · one-click">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {THEME_PRESETS.map(t => {
+                const active = profile.accent_color === t.accent && profile.secondary_color === t.secondary && profile.background_effect === t.bg;
+                return (
+                  <button key={t.id} onClick={() => patch({
+                    accent_color: t.accent, secondary_color: t.secondary,
+                    background_effect: t.bg, font_family: t.font, click_effect_style: t.click,
+                  })}
+                    className={`relative rounded-lg p-3 text-left border transition-all hover:-translate-y-0.5 ${active ? "border-primary glow-purple" : "border-border"}`}
+                    style={{ background: `linear-gradient(135deg, ${t.accent}22, ${t.secondary}22)` }}>
+                    <div className="flex gap-1 mb-2">
+                      <span className="w-4 h-4 rounded-full" style={{ background: t.accent, boxShadow: `0 0 8px ${t.accent}` }} />
+                      <span className="w-4 h-4 rounded-full" style={{ background: t.secondary, boxShadow: `0 0 8px ${t.secondary}` }} />
+                    </div>
+                    <div className="text-xs font-mono font-semibold">{t.label}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono">{t.bg}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </Section>
+
           {/* Identity */}
           <Section title="// IDENTITY">
+
             <div className="flex gap-4">
               <label className="shrink-0 cursor-pointer group">
                 <div className="w-20 h-20 rounded-full p-0.5"
@@ -290,7 +315,20 @@ function Dashboard() {
               <input type="file" accept="audio/*" className="hidden"
                      onChange={e => e.target.files?.[0] && uploadMusic(e.target.files[0])} />
             </label>
+            <div className="pt-2">
+              <div className="text-xs font-mono text-muted-foreground mb-2">// free song library — click to use</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {SONG_LIBRARY.map(s => (
+                  <button key={s.url} onClick={() => { setMusicPath(s.url); patch({ music_title: s.title }); }}
+                          className={`text-left rounded-md px-3 py-2 border text-xs transition-all hover:-translate-y-0.5 ${musicPath === s.url ? "border-primary glow-purple" : "border-border bg-input/40"}`}>
+                    <div className="font-medium truncate">♪ {s.title}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono truncate">{s.mood}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </Section>
+
 
           {/* Links */}
           <Section title="// LINKS">
