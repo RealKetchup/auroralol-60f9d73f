@@ -133,8 +133,11 @@ function Dashboard() {
 
   const save = async () => {
     if (!profile) return;
+    const uname = profile.username.trim().toLowerCase();
+    if (!/^[a-z0-9_-]{2,24}$/.test(uname)) return toast.error("Username must be 2–24 chars · a-z 0-9 _ -");
     setSaving(true);
     const { error } = await supabase.from("profiles").update({
+      username: uname,
       display_name: profile.display_name,
       bio: profile.bio,
       discord_id: profile.discord_id,
@@ -161,9 +164,13 @@ function Dashboard() {
       animation_speed: profile.animation_speed,
     }).eq("id", profile.id);
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      if (error.code === "23505" || /duplicate|unique/i.test(error.message)) return toast.error("That username is already taken");
+      return toast.error(error.message);
+    }
     toast.success("Saved");
   };
+
 
   const uploadAvatar = async (file: File) => {
     if (!profile) return;
@@ -293,10 +300,15 @@ function Dashboard() {
                 <div className="text-[10px] text-center mt-1 font-mono text-muted-foreground group-hover:text-foreground">change</div>
               </label>
               <div className="flex-1 space-y-2">
-                <Field label="Username (locked)">
-                  <input value={profile.username} disabled
-                         className="w-full bg-input/50 rounded-md px-3 py-2 text-sm border border-border font-mono" />
+                <Field label="Username · your public URL /[username]">
+                  <div className="flex items-stretch gap-0 rounded-md border border-border overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+                    <span className="px-3 flex items-center bg-input/40 text-xs text-muted-foreground font-mono border-r border-border">aurora.lol/</span>
+                    <input value={profile.username}
+                           onChange={e => patch({ username: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 24) })}
+                           className="flex-1 bg-input px-3 py-2 text-sm font-mono focus:outline-none" />
+                  </div>
                 </Field>
+
                 <Field label="Display name">
                   <input value={profile.display_name ?? ""} onChange={e => patch({ display_name: e.target.value })}
                          className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border" />
