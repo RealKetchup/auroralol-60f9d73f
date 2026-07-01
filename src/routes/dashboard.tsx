@@ -80,6 +80,31 @@ const AVATAR_OPTIONS = [
   { id: "hex", label: "Hex" },
 ];
 
+const THEME_PRESETS: { id: string; label: string; accent: string; secondary: string; bg: string; font: string; click: string }[] = [
+  { id: "aurora",   label: "Aurora",     accent: "#a855f7", secondary: "#22c55e", bg: "aurora",    font: "space-grotesk", click: "burst" },
+  { id: "sunset",   label: "Sunset",     accent: "#f97316", secondary: "#ec4899", bg: "mesh",      font: "space-grotesk", click: "sparkle" },
+  { id: "cyber",    label: "Cyberpunk",  accent: "#22d3ee", secondary: "#a855f7", bg: "grid",      font: "mono",          click: "burst" },
+  { id: "matrix",   label: "Matrix",     accent: "#22c55e", secondary: "#16a34a", bg: "matrix",    font: "mono",          click: "sparkle" },
+  { id: "midnight", label: "Midnight",   accent: "#6366f1", secondary: "#8b5cf6", bg: "stars",     font: "space-grotesk", click: "ripple" },
+  { id: "bubblegum",label: "Bubblegum",  accent: "#ec4899", secondary: "#f472b6", bg: "particles", font: "space-grotesk", click: "heart" },
+  { id: "vapor",    label: "Vaporwave",  accent: "#f0abfc", secondary: "#67e8f9", bg: "mesh",      font: "serif",         click: "sparkle" },
+  { id: "ember",    label: "Ember",      accent: "#ef4444", secondary: "#f59e0b", bg: "particles", font: "space-grotesk", click: "burst" },
+  { id: "mint",     label: "Mint",       accent: "#10b981", secondary: "#06b6d4", bg: "aurora",    font: "space-grotesk", click: "ripple" },
+  { id: "royal",    label: "Royal",      accent: "#eab308", secondary: "#7c3aed", bg: "stars",     font: "serif",         click: "sparkle" },
+  { id: "mono",     label: "Monochrome", accent: "#e5e5e5", secondary: "#737373", bg: "grid",      font: "mono",          click: "ripple" },
+  { id: "blood",    label: "Blood Moon", accent: "#dc2626", secondary: "#450a0a", bg: "matrix",    font: "mono",          click: "burst" },
+];
+
+const SONG_LIBRARY: { title: string; mood: string; url: string }[] = [
+  { title: "Lofi Rain",       mood: "chill · lofi",     url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946bc7a4b6.mp3" },
+  { title: "Neon Nights",     mood: "synthwave",        url: "https://cdn.pixabay.com/audio/2023/08/29/audio_1f16a9e35a.mp3" },
+  { title: "Deep Space",      mood: "ambient",          url: "https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a73467.mp3" },
+  { title: "Cyberpunk Ride",  mood: "electronic",       url: "https://cdn.pixabay.com/audio/2024/03/07/audio_2c8bcae13d.mp3" },
+  { title: "Midnight Drive",  mood: "synthwave",        url: "https://cdn.pixabay.com/audio/2023/06/14/audio_39956d2f6d.mp3" },
+  { title: "Retro Wave",      mood: "80s vibes",        url: "https://cdn.pixabay.com/audio/2022/10/16/audio_2d10f6b330.mp3" },
+];
+
+
 function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
