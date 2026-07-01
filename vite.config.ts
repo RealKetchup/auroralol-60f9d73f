@@ -1,8 +1,3 @@
-import { defineConfig } from '@tanstack/start/config'
-import vercel from '@tanstack/vercel-adapter'
+import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-export default defineConfig({
-  server: {
-    adapter: vercel(),
-  },
-})
+export default defineConfig();

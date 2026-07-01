@@ -80,6 +80,31 @@ const AVATAR_OPTIONS = [
   { id: "hex", label: "Hex" },
 ];
 
+const THEME_PRESETS: { id: string; label: string; accent: string; secondary: string; bg: string; font: string; click: string }[] = [
+  { id: "aurora",   label: "Aurora",     accent: "#a855f7", secondary: "#22c55e", bg: "aurora",    font: "space-grotesk", click: "burst" },
+  { id: "sunset",   label: "Sunset",     accent: "#f97316", secondary: "#ec4899", bg: "mesh",      font: "space-grotesk", click: "sparkle" },
+  { id: "cyber",    label: "Cyberpunk",  accent: "#22d3ee", secondary: "#a855f7", bg: "grid",      font: "mono",          click: "burst" },
+  { id: "matrix",   label: "Matrix",     accent: "#22c55e", secondary: "#16a34a", bg: "matrix",    font: "mono",          click: "sparkle" },
+  { id: "midnight", label: "Midnight",   accent: "#6366f1", secondary: "#8b5cf6", bg: "stars",     font: "space-grotesk", click: "ripple" },
+  { id: "bubblegum",label: "Bubblegum",  accent: "#ec4899", secondary: "#f472b6", bg: "particles", font: "space-grotesk", click: "heart" },
+  { id: "vapor",    label: "Vaporwave",  accent: "#f0abfc", secondary: "#67e8f9", bg: "mesh",      font: "serif",         click: "sparkle" },
+  { id: "ember",    label: "Ember",      accent: "#ef4444", secondary: "#f59e0b", bg: "particles", font: "space-grotesk", click: "burst" },
+  { id: "mint",     label: "Mint",       accent: "#10b981", secondary: "#06b6d4", bg: "aurora",    font: "space-grotesk", click: "ripple" },
+  { id: "royal",    label: "Royal",      accent: "#eab308", secondary: "#7c3aed", bg: "stars",     font: "serif",         click: "sparkle" },
+  { id: "mono",     label: "Monochrome", accent: "#e5e5e5", secondary: "#737373", bg: "grid",      font: "mono",          click: "ripple" },
+  { id: "blood",    label: "Blood Moon", accent: "#dc2626", secondary: "#450a0a", bg: "matrix",    font: "mono",          click: "burst" },
+];
+
+const SONG_LIBRARY: { title: string; mood: string; url: string }[] = [
+  { title: "Lofi Rain",       mood: "chill · lofi",     url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946bc7a4b6.mp3" },
+  { title: "Neon Nights",     mood: "synthwave",        url: "https://cdn.pixabay.com/audio/2023/08/29/audio_1f16a9e35a.mp3" },
+  { title: "Deep Space",      mood: "ambient",          url: "https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a73467.mp3" },
+  { title: "Cyberpunk Ride",  mood: "electronic",       url: "https://cdn.pixabay.com/audio/2024/03/07/audio_2c8bcae13d.mp3" },
+  { title: "Midnight Drive",  mood: "synthwave",        url: "https://cdn.pixabay.com/audio/2023/06/14/audio_39956d2f6d.mp3" },
+  { title: "Retro Wave",      mood: "80s vibes",        url: "https://cdn.pixabay.com/audio/2022/10/16/audio_2d10f6b330.mp3" },
+];
+
+
 function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -224,8 +249,33 @@ function Dashboard() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 grid lg:grid-cols-[1fr_340px] gap-6">
         <div className="space-y-6">
+          {/* Themes */}
+          <Section title="// THEME PRESETS · one-click">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {THEME_PRESETS.map(t => {
+                const active = profile.accent_color === t.accent && profile.secondary_color === t.secondary && profile.background_effect === t.bg;
+                return (
+                  <button key={t.id} onClick={() => patch({
+                    accent_color: t.accent, secondary_color: t.secondary,
+                    background_effect: t.bg, font_family: t.font, click_effect_style: t.click,
+                  })}
+                    className={`relative rounded-lg p-3 text-left border transition-all hover:-translate-y-0.5 ${active ? "border-primary glow-purple" : "border-border"}`}
+                    style={{ background: `linear-gradient(135deg, ${t.accent}22, ${t.secondary}22)` }}>
+                    <div className="flex gap-1 mb-2">
+                      <span className="w-4 h-4 rounded-full" style={{ background: t.accent, boxShadow: `0 0 8px ${t.accent}` }} />
+                      <span className="w-4 h-4 rounded-full" style={{ background: t.secondary, boxShadow: `0 0 8px ${t.secondary}` }} />
+                    </div>
+                    <div className="text-xs font-mono font-semibold">{t.label}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono">{t.bg}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </Section>
+
           {/* Identity */}
           <Section title="// IDENTITY">
+
             <div className="flex gap-4">
               <label className="shrink-0 cursor-pointer group">
                 <div className="w-20 h-20 rounded-full p-0.5"
@@ -290,7 +340,20 @@ function Dashboard() {
               <input type="file" accept="audio/*" className="hidden"
                      onChange={e => e.target.files?.[0] && uploadMusic(e.target.files[0])} />
             </label>
+            <div className="pt-2">
+              <div className="text-xs font-mono text-muted-foreground mb-2">// free song library — click to use</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {SONG_LIBRARY.map(s => (
+                  <button key={s.url} onClick={() => { setMusicPath(s.url); patch({ music_title: s.title }); }}
+                          className={`text-left rounded-md px-3 py-2 border text-xs transition-all hover:-translate-y-0.5 ${musicPath === s.url ? "border-primary glow-purple" : "border-border bg-input/40"}`}>
+                    <div className="font-medium truncate">♪ {s.title}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono truncate">{s.mood}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </Section>
+
 
           {/* Links */}
           <Section title="// LINKS">

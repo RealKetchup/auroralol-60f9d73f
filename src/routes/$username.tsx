@@ -149,8 +149,18 @@ function ProfilePage() {
                 </div>
               )}
             </div>
-            <h1 className="mt-4 text-2xl font-bold">{profile.display_name || profile.username}</h1>
+            <h1 className="mt-4 text-2xl font-bold flex items-center justify-center gap-2">
+              {profile.display_name || profile.username}
+              {profile.username.toLowerCase() === "owner" && (
+                <span title="Site Owner" className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded-full"
+                      style={{ background: `linear-gradient(135deg, ${profile.accent_color}, ${profile.secondary_color})`,
+                               boxShadow: `0 0 16px ${profile.accent_color}88`, color: "white" }}>
+                  👑 OWNER
+                </span>
+              )}
+            </h1>
             <div className="font-mono text-sm text-muted-foreground">@{profile.username}</div>
+
             {profile.bio && <p className="mt-4 text-sm text-foreground/90 whitespace-pre-wrap max-w-md mx-auto">{profile.bio}</p>}
             {profile.roblox_url && (
               <a href={profile.roblox_url} target="_blank" rel="noreferrer"
