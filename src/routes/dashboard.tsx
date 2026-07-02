@@ -38,8 +38,14 @@ type Profile = {
   entry_animation: string;
   avatar_shape: string;
   animation_speed: number;
+  profile_style: string;
 };
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
+
+const STYLE_OPTIONS = [
+  { id: "code", label: "Code editor" },
+  { id: "minimal", label: "Minimal card" },
+];
 
 const BG_OPTIONS = [
   { id: "particles", label: "Particles" },
