@@ -96,9 +96,13 @@ function ProfilePage() {
   const green = profile.secondary_color;
   const speedStyle = { ["--anim-speed" as never]: profile.animation_speed } as React.CSSProperties;
   const isSiteOwner = profile.username.toLowerCase() === "owner";
+  const minimal = profile.profile_style === "minimal";
 
   return (
-    <div className="min-h-screen relative font-mono text-[13px] sm:text-sm" style={speedStyle}>
+    <div className={`min-h-screen relative ${minimal ? "text-[14px] sm:text-[15px]" : "font-mono text-[13px] sm:text-sm"}`} style={speedStyle}>
+      {minimal && (
+        <style>{`.aurora-min h1,.aurora-min h2,.aurora-min h3{font-family:var(--font-space-grotesk,'Space Grotesk'),system-ui,sans-serif}`}</style>
+      )}
       {bgImageUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
       {profile.background_effect === "particles" && <Particles color={accent} />}
       {profile.background_effect === "aurora" && <AuroraBg accent={accent} secondary={green} />}
