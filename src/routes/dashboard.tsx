@@ -38,8 +38,14 @@ type Profile = {
   entry_animation: string;
   avatar_shape: string;
   animation_speed: number;
+  profile_style: string;
 };
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
+
+const STYLE_OPTIONS = [
+  { id: "code", label: "Code editor" },
+  { id: "minimal", label: "Minimal card" },
+];
 
 const BG_OPTIONS = [
   { id: "particles", label: "Particles" },
@@ -162,6 +168,7 @@ function Dashboard() {
       entry_animation: profile.entry_animation,
       avatar_shape: profile.avatar_shape,
       animation_speed: profile.animation_speed,
+      profile_style: profile.profile_style,
     }).eq("id", profile.id);
     setSaving(false);
     if (error) {
@@ -393,6 +400,15 @@ function Dashboard() {
 
         {/* Customization sidebar */}
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+          <Section title="// PROFILE STYLE">
+            <Field label="Look">
+              <Pills options={STYLE_OPTIONS} value={profile.profile_style} onChange={v => patch({ profile_style: v })} />
+            </Field>
+            <p className="text-[11px] text-muted-foreground font-mono opacity-70">
+              // "code editor" = the aurora.py look · "minimal card" = clean centered card
+            </p>
+          </Section>
+
           <Section title="// COLORS">
             <Field label="Accent color">
               <ColorRow value={profile.accent_color} onChange={c => patch({ accent_color: c })} />
