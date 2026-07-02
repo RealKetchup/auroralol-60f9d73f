@@ -168,6 +168,7 @@ function Dashboard() {
       entry_animation: profile.entry_animation,
       avatar_shape: profile.avatar_shape,
       animation_speed: profile.animation_speed,
+      profile_style: profile.profile_style,
     }).eq("id", profile.id);
     setSaving(false);
     if (error) {
