@@ -271,10 +271,27 @@ function RobloxBadge({ url, accent, green }: { url: string; accent: string; gree
   );
 }
 
-function Section({ id, index, keyword, name, method, comment, accent, green, children }: {
+
+function avatarShape(s: string) {
+  return s === "square" ? "rounded-2xl" : s === "hex" ? "rounded-[30%]" : "rounded-full";
+}
+
+function Section({ id, index, keyword, name, method, comment, accent, green, minimal, children }: {
   id?: string; index: string; keyword: string; name: string; method?: string; comment?: string;
-  accent: string; green: string; children: React.ReactNode;
+  accent: string; green: string; minimal?: boolean; children: React.ReactNode;
 }) {
+  if (minimal) {
+    return (
+      <section id={id} className="space-y-3 animate-fade-in-up">
+        {(comment || name) && (
+          <h2 className="text-lg sm:text-xl font-semibold tracking-tight opacity-90">
+            {comment ? comment.replace(/^#\s*/, "") : name}
+          </h2>
+        )}
+        {children}
+      </section>
+    );
+  }
   return (
     <section id={id} className="space-y-3 animate-fade-in-up">
       <div className="flex items-baseline gap-2 flex-wrap">
@@ -289,27 +306,43 @@ function Section({ id, index, keyword, name, method, comment, accent, green, chi
   );
 }
 
-function CodeWindow({ filename, accent, green, status, statusColor, children }: {
+function CodeWindow({ filename, accent, green, status, statusColor, profile, children }: {
   filename: string; accent: string; green: string; status?: string; statusColor?: string;
-  children: React.ReactNode;
+  profile: Profile; children: React.ReactNode;
 }) {
+  const minimal = profile.profile_style === "minimal";
+  const alpha = Math.max(0.05, Math.min(0.95, profile.card_opacity));
+  const blur = `${profile.card_blur}px`;
+  const glow = profile.border_glow
+    ? `0 12px 40px -12px ${accent}66, 0 0 24px -6px ${green}44, 0 0 1px ${accent}88 inset`
+    : `0 8px 24px -12px rgba(0,0,0,0.4)`;
+  const tilt = profile.tilt_cards ? "tilt-card" : "";
   return (
-    <div className="rounded-xl overflow-hidden border backdrop-blur-xl"
-         style={{ borderColor: `${accent}33`, background: "oklch(0.14 0.02 280 / 0.55)", boxShadow: `0 12px 40px -12px ${accent}44, 0 0 1px ${accent}55 inset` }}>
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border/40 text-[11px]" style={{ background: "oklch(0.11 0.02 280 / 0.6)" }}>
-        <span className="flex gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.65_0.27_25)]" />
-          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.85_0.18_80)]" />
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: green }} />
-        </span>
-        <span className="opacity-70 truncate">{filename}</span>
-        {status && (
-          <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider" style={{ color: statusColor || accent }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor || accent }} /> {status}
+    <div className={`rounded-xl overflow-hidden border ${tilt}`}
+         style={{
+           borderColor: profile.border_glow ? `${accent}55` : `${accent}22`,
+           background: `oklch(0.14 0.02 280 / ${alpha})`,
+           backdropFilter: `blur(${blur})`,
+           WebkitBackdropFilter: `blur(${blur})`,
+           boxShadow: glow,
+         }}>
+      {!minimal && (
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border/40 text-[11px]" style={{ background: "oklch(0.11 0.02 280 / 0.6)" }}>
+          <span className="flex gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.65_0.27_25)]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.85_0.18_80)]" />
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: green }} />
           </span>
-        )}
-      </div>
+          <span className="opacity-70 truncate">{filename}</span>
+          {status && (
+            <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider" style={{ color: statusColor || accent }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor || accent }} /> {status}
+            </span>
+          )}
+        </div>
+      )}
       {children}
     </div>
   );
 }
+
