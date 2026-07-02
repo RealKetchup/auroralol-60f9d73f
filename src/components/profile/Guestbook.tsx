@@ -17,6 +17,7 @@ export function Guestbook({ profileId, isOwner }: { profileId: string; isOwner: 
   const [content, setContent] = useState("");
   const [rating, setRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const load = async () => {
     const { data } = await supabase
@@ -28,26 +29,36 @@ export function Guestbook({ profileId, isOwner }: { profileId: string; isOwner: 
     setReviews(data || []);
   };
 
-  useEffect(() => { load(); }, [profileId]);
+  useEffect(() => {
+    load();
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
+      const meta = data.user?.user_metadata as { full_name?: string; name?: string } | undefined;
+      if (data.user && !name) setName(meta?.full_name || meta?.name || data.user.email?.split("@")[0] || "");
+    });
+  }, [profileId]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userId) return toast.error("Sign in to leave a review");
     const n = name.trim();
     const c = content.trim();
     if (n.length < 1 || n.length > 40) return toast.error("Name must be 1–40 chars");
     if (c.length < 1 || c.length > 500) return toast.error("Message must be 1–500 chars");
     setSubmitting(true);
-    const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase.from("reviews").insert({
       profile_id: profileId,
-      author_id: user?.id ?? null,
+      author_id: userId,
       author_name: n,
       content: c,
       rating,
     });
     setSubmitting(false);
-    if (error) return toast.error(error.message);
-    setContent(""); setName(""); setRating(5);
+    if (error) {
+      if (error.code === "23505") return toast.error("You already left a review for this profile");
+      return toast.error(error.message);
+    }
+    setContent(""); setRating(5);
     toast.success("Thanks for signing!");
     load();
   };
