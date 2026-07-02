@@ -7,6 +7,7 @@ import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, ImageBg } from 
 import { ClickEffect, CustomCursor, CursorTrail } from "@/components/profile/Effects";
 import { LanyardCard } from "@/components/profile/LanyardCard";
 import { Guestbook } from "@/components/profile/Guestbook";
+import { detectIcon, IconFor, ICON_COLOR } from "@/lib/link-icons";
 
 type Profile = {
   id: string;
@@ -36,6 +37,7 @@ type Profile = {
   entry_animation: string;
   avatar_shape: string;
   animation_speed: number;
+  profile_style: string;
 };
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
 
