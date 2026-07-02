@@ -135,13 +135,13 @@ function ProfilePage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-8 py-16 sm:py-24 space-y-20">
-        {/* [00] class profile — identity */}
-        <Section index="00" keyword="class" name={`${profile.username}:`} comment={`# profile — ${profile.display_name || profile.username}${isSiteOwner ? " · SITE OWNER 👑" : ""}`} accent={accent} green={green}>
-          <CodeWindow filename={`${profile.username}.py`} accent={accent} green={green} status={isSiteOwner ? "OWNER" : undefined}>
-            <div className="p-5 sm:p-6 flex flex-col sm:flex-row gap-5 sm:gap-6 items-center sm:items-start">
-              <div className="shrink-0 relative">
-                <div className={`w-24 h-24 sm:w-28 sm:h-28 ${avatarShape(profile.avatar_shape)} p-[3px] animate-pulse-glow`}
+      <main className={`max-w-5xl mx-auto px-4 sm:px-8 py-16 sm:py-24 ${minimal ? "space-y-10 aurora-min" : "space-y-20"}`}>
+        {/* [00] identity */}
+        <Section index="00" keyword="class" name={`${profile.username}:`} comment={`# profile — ${profile.display_name || profile.username}${isSiteOwner ? " · SITE OWNER 👑" : ""}`} accent={accent} green={green} minimal={minimal}>
+          <CodeWindow filename={`${profile.username}.py`} accent={accent} green={green} status={isSiteOwner ? "OWNER" : undefined} profile={profile}>
+            {minimal ? (
+              <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4">
+                <div className={`w-28 h-28 sm:w-32 sm:h-32 ${avatarShape(profile.avatar_shape)} p-[3px] animate-pulse-glow`}
                      style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="" className={`w-full h-full ${avatarShape(profile.avatar_shape)} object-cover bg-background`} />
@@ -151,93 +151,100 @@ function ProfilePage() {
                     </div>
                   )}
                 </div>
-                {isSiteOwner && (
-                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-mono px-2 py-0.5 rounded-full whitespace-nowrap"
-                        style={{ background: `linear-gradient(135deg, ${accent}, ${green})`, color: "white", boxShadow: `0 0 12px ${accent}88` }}>
-                    👑 OWNER
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0 space-y-2 text-center sm:text-left">
                 <div>
-                  <span className="opacity-50">display_name</span> <span style={{ color: accent }}>=</span>{" "}
-                  <span style={{ color: green }}>&quot;{profile.display_name || profile.username}&quot;</span>
+                  <h1 className="text-2xl sm:text-3xl font-bold">{profile.display_name || profile.username}</h1>
+                  <div className="text-sm opacity-60">@{profile.username}{isSiteOwner && <span className="ml-2">👑</span>}</div>
                 </div>
-                <div>
-                  <span className="opacity-50">username</span> <span style={{ color: accent }}>=</span>{" "}
-                  <span style={{ color: green }}>&quot;@{profile.username}&quot;</span>
-                </div>
-                {profile.bio && (
-                  <div className="pt-1">
-                    <span className="opacity-50">bio</span> <span style={{ color: accent }}>=</span>{" "}
-                    <span style={{ color: green }}>&quot;&quot;&quot;</span>
-                    <div style={{ color: green }} className="whitespace-pre-wrap opacity-90 pl-4">{profile.bio}</div>
-                    <span style={{ color: green }}>&quot;&quot;&quot;</span>
-                  </div>
-                )}
-                {profile.roblox_url && (
-                  <div className="pt-2">
-                    <a href={profile.roblox_url} target="_blank" rel="noreferrer"
-                       className="inline-flex items-center gap-2 glass-strong rounded-full pl-2 pr-4 py-1.5 hover:glow-magenta transition-shadow">
-                      <span className="w-6 h-6 rounded-full flex items-center justify-center animate-spin-slow"
-                            style={{ background: `radial-gradient(circle, ${accent}, ${green})`, boxShadow: `0 0 16px ${accent}` }}>
-                        <svg viewBox="0 0 24 24" className="w-3 h-3" fill="white"><path d="M3 3l16 4-4 16L3 3zm5.5 5.5l3 8 5-3-8-5z"/></svg>
-                      </span>
-                      <span className="text-[11px]">roblox.profile()</span>
-                    </a>
-                  </div>
-                )}
+                {profile.bio && <p className="max-w-md text-sm sm:text-base opacity-85 whitespace-pre-wrap">{profile.bio}</p>}
+                {profile.roblox_url && <RobloxBadge url={profile.roblox_url} accent={accent} green={green} />}
               </div>
-            </div>
+            ) : (
+              <div className="p-5 sm:p-6 flex flex-col sm:flex-row gap-5 sm:gap-6 items-center sm:items-start">
+                <div className="shrink-0 relative">
+                  <div className={`w-24 h-24 sm:w-28 sm:h-28 ${avatarShape(profile.avatar_shape)} p-[3px] animate-pulse-glow`}
+                       style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className={`w-full h-full ${avatarShape(profile.avatar_shape)} object-cover bg-background`} />
+                    ) : (
+                      <div className={`w-full h-full ${avatarShape(profile.avatar_shape)} bg-background flex items-center justify-center text-3xl font-bold`}>
+                        {(profile.display_name || profile.username)[0].toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  {isSiteOwner && (
+                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-mono px-2 py-0.5 rounded-full whitespace-nowrap"
+                          style={{ background: `linear-gradient(135deg, ${accent}, ${green})`, color: "white", boxShadow: `0 0 12px ${accent}88` }}>
+                      👑 OWNER
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 space-y-2 text-center sm:text-left">
+                  <div><span className="opacity-50">display_name</span> <span style={{ color: accent }}>=</span> <span style={{ color: green }}>&quot;{profile.display_name || profile.username}&quot;</span></div>
+                  <div><span className="opacity-50">username</span> <span style={{ color: accent }}>=</span> <span style={{ color: green }}>&quot;@{profile.username}&quot;</span></div>
+                  {profile.bio && (
+                    <div className="pt-1">
+                      <span className="opacity-50">bio</span> <span style={{ color: accent }}>=</span> <span style={{ color: green }}>&quot;&quot;&quot;</span>
+                      <div style={{ color: green }} className="whitespace-pre-wrap opacity-90 pl-4">{profile.bio}</div>
+                      <span style={{ color: green }}>&quot;&quot;&quot;</span>
+                    </div>
+                  )}
+                  {profile.roblox_url && <div className="pt-2"><RobloxBadge url={profile.roblox_url} accent={accent} green={green} /></div>}
+                </div>
+              </div>
+            )}
           </CodeWindow>
         </Section>
 
-        {/* [01] discord */}
         {profile.discord_id && (
-          <Section id="discord" index="01" keyword="import" name="discord_presence.live" accent={accent} green={green}
+          <Section id="discord" index="01" keyword="import" name="discord_presence.live" accent={accent} green={green} minimal={minimal}
                    comment="# streaming live from Discord via Lanyard — updates every 15s">
-            <CodeWindow filename="discord_presence.live" accent={accent} green={green} status="LIVE" statusColor={green}>
-              <div className="p-3">
-                <LanyardCard discordId={profile.discord_id} />
-              </div>
+            <CodeWindow filename="discord_presence.live" accent={accent} green={green} status="LIVE" statusColor={green} profile={profile}>
+              <div className="p-3"><LanyardCard discordId={profile.discord_id} /></div>
             </CodeWindow>
           </Section>
         )}
 
-        {/* [02] links */}
         {links.length > 0 && (
-          <Section id="links" index="02" keyword="from" name="links.py" method=" import *" accent={accent} green={green}
+          <Section id="links" index="02" keyword="from" name="links.py" method=" import *" accent={accent} green={green} minimal={minimal}
                    comment="# quick jumps — socials, portfolio, whatever">
-            <CodeWindow filename="links.py" accent={accent} green={green}>
+            <CodeWindow filename="links.py" accent={accent} green={green} profile={profile}>
               <div className={`p-4 grid gap-2 ${profile.layout_style === "grid" ? "sm:grid-cols-2" : "grid-cols-1"}`}>
-                {links.map((l: Lnk, i: number) => (
-                  <a key={l.id} href={l.url} target="_blank" rel="noreferrer"
-                     className="flex items-center gap-2 rounded-md px-3 py-2 border border-border/50 bg-background/30 hover:-translate-y-0.5 transition-all group">
-                    <span className="opacity-40 text-[11px]">[{String(i).padStart(2, "0")}]</span>
-                    <span style={{ color: accent }}>open</span>
-                    <span className="opacity-60">(</span>
-                    <span style={{ color: green }} className="truncate">&quot;{l.label}&quot;</span>
-                    <span className="opacity-60">)</span>
-                    <span className="ml-auto opacity-30 group-hover:opacity-80 transition-opacity">→</span>
-                  </a>
-                ))}
+                {links.map((l: Lnk, i: number) => {
+                  const kind = detectIcon(l.url);
+                  const color = ICON_COLOR[kind];
+                  return (
+                    <a key={l.id} href={l.url} target="_blank" rel="noreferrer"
+                       className="flex items-center gap-3 rounded-md px-3 py-2 border border-border/50 bg-background/30 hover:-translate-y-0.5 transition-all group">
+                      <span className="flex items-center justify-center w-7 h-7 rounded-md shrink-0"
+                            style={{ background: `${color}22`, color, boxShadow: `0 0 12px ${color}44` }}>
+                        <IconFor kind={kind} className="w-4 h-4" />
+                      </span>
+                      {minimal ? (
+                        <span className="truncate font-medium">{l.label}</span>
+                      ) : (
+                        <>
+                          <span className="opacity-40 text-[11px]">[{String(i).padStart(2, "0")}]</span>
+                          <span style={{ color: accent }}>open</span>
+                          <span className="opacity-60">(</span>
+                          <span style={{ color: green }} className="truncate">&quot;{l.label}&quot;</span>
+                          <span className="opacity-60">)</span>
+                        </>
+                      )}
+                      <span className="ml-auto opacity-30 group-hover:opacity-80 transition-opacity">→</span>
+                    </a>
+                  );
+                })}
               </div>
             </CodeWindow>
           </Section>
         )}
 
-        {/* [03] reviews */}
         <Section id="reviews" index={profile.discord_id ? (links.length ? "03" : "02") : "01"}
-                 keyword="import" name="reviews.db" accent={accent} green={green}
-                 comment="# leave a note in the guestbook — no signup, just your name and a rating">
-          <div className="grid md:grid-cols-2 gap-4">
-            <CodeWindow filename="leave_review.py" accent={accent} green={green}>
-              <Guestbook profileId={profile.id} isOwner={isOwner} />
-            </CodeWindow>
-            <CodeWindow filename="reviews.json" accent={accent} green={green} status="4 entries">
-              <div className="p-4 text-xs opacity-60 italic">// entries render on the left · owner can delete on hover</div>
-            </CodeWindow>
-          </div>
+                 keyword="import" name="reviews.db" accent={accent} green={green} minimal={minimal}
+                 comment="# leave a note in the guestbook — signed reviewers only">
+          <CodeWindow filename="reviews.db" accent={accent} green={green} profile={profile}>
+            <Guestbook profileId={profile.id} isOwner={isOwner} />
+          </CodeWindow>
         </Section>
 
         <footer className="text-center text-[11px] text-muted-foreground pt-8">
@@ -251,8 +258,17 @@ function ProfilePage() {
   );
 }
 
-function avatarShape(s: string) {
-  return s === "square" ? "rounded-2xl" : s === "hex" ? "rounded-[30%]" : "rounded-full";
+function RobloxBadge({ url, accent, green }: { url: string; accent: string; green: string }) {
+  return (
+    <a href={url} target="_blank" rel="noreferrer"
+       className="inline-flex items-center gap-2 glass-strong rounded-full pl-2 pr-4 py-1.5 hover:glow-magenta transition-shadow">
+      <span className="w-6 h-6 rounded-full flex items-center justify-center animate-spin-slow"
+            style={{ background: `radial-gradient(circle, ${accent}, ${green})`, boxShadow: `0 0 16px ${accent}` }}>
+        <svg viewBox="0 0 24 24" className="w-3 h-3" fill="white"><path d="M3 3l16 4-4 16L3 3zm5.5 5.5l3 8 5-3-8-5z"/></svg>
+      </span>
+      <span className="text-[11px]">roblox.profile()</span>
+    </a>
+  );
 }
 
 function Section({ id, index, keyword, name, method, comment, accent, green, children }: {
