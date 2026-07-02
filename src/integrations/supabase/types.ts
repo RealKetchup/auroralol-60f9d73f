@@ -78,6 +78,7 @@ export type Database = {
           layout_style: string
           music_title: string | null
           music_url: string | null
+          profile_style: string
           roblox_url: string | null
           secondary_color: string | null
           tilt_cards: boolean
@@ -110,6 +111,7 @@ export type Database = {
           layout_style?: string
           music_title?: string | null
           music_url?: string | null
+          profile_style?: string
           roblox_url?: string | null
           secondary_color?: string | null
           tilt_cards?: boolean
@@ -142,6 +144,7 @@ export type Database = {
           layout_style?: string
           music_title?: string | null
           music_url?: string | null
+          profile_style?: string
           roblox_url?: string | null
           secondary_color?: string | null
           tilt_cards?: boolean
