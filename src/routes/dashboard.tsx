@@ -260,7 +260,7 @@ function Dashboard() {
       <main className="max-w-5xl mx-auto px-4 py-8 grid lg:grid-cols-[1fr_340px] gap-6">
         <div className="space-y-6">
           {/* Themes */}
-          <Section title="// THEME PRESETS · one-click">
+          <Section title="Theme presets">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {THEME_PRESETS.map(t => {
                 const active = profile.accent_color === t.accent && profile.secondary_color === t.secondary && profile.background_effect === t.bg;
@@ -284,7 +284,7 @@ function Dashboard() {
           </Section>
 
           {/* Identity */}
-          <Section title="// IDENTITY">
+          <Section title="Identity">
 
             <div className="flex gap-4">
               <label className="shrink-0 cursor-pointer group">
@@ -325,7 +325,7 @@ function Dashboard() {
           </Section>
 
           {/* Integrations */}
-          <Section title="// INTEGRATIONS">
+          <Section title="Integrations">
             <Field label="Discord ID (for Lanyard live status)">
               <input value={profile.discord_id ?? ""} onChange={e => patch({ discord_id: e.target.value })}
                      placeholder="e.g. 156114103033790464"
@@ -340,7 +340,7 @@ function Dashboard() {
           </Section>
 
           {/* Music */}
-          <Section title="// MUSIC">
+          <Section title="Music">
             <Field label="Track title">
               <input value={profile.music_title ?? ""} onChange={e => patch({ music_title: e.target.value })}
                      className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border" />
@@ -356,7 +356,7 @@ function Dashboard() {
                      onChange={e => e.target.files?.[0] && uploadMusic(e.target.files[0])} />
             </label>
             <div className="pt-2">
-              <div className="text-xs font-mono text-muted-foreground mb-2">// free song library — click to use</div>
+              <div className="text-xs font-mono text-muted-foreground mb-2">Free song library — click to use</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {SONG_LIBRARY.map(s => (
                   <button key={s.url} onClick={() => { setMusicPath(s.url); patch({ music_title: s.title }); }}
@@ -371,7 +371,7 @@ function Dashboard() {
 
 
           {/* Links */}
-          <Section title="// LINKS">
+          <Section title="Links">
             <div className="space-y-2">
               {links.map((l) => (
                 <div key={l.id} className="flex gap-2">
@@ -405,7 +405,7 @@ function Dashboard() {
             </Field>
           </Section>
 
-          <Section title="// LAYOUT & TYPE">
+          <Section title="Layout & type">
             <Field label="Font">
               <Pills options={FONT_OPTIONS} value={profile.font_family} onChange={v => patch({ font_family: v })} />
             </Field>
@@ -420,7 +420,7 @@ function Dashboard() {
             </Field>
           </Section>
 
-          <Section title="// CARDS">
+          <Section title="Cards">
             <Slider label={`Opacity · ${profile.card_opacity.toFixed(2)}`} min={0.1} max={0.95} step={0.05}
                     value={profile.card_opacity} onChange={v => patch({ card_opacity: v })} />
             <Slider label={`Blur · ${profile.card_blur}px`} min={0} max={40} step={2}
@@ -429,7 +429,7 @@ function Dashboard() {
             <Toggle label="Tilt on hover" checked={profile.tilt_cards} onChange={v => patch({ tilt_cards: v })} />
           </Section>
 
-          <Section title="// BACKGROUND">
+          <Section title="Background">
             <Field label="Effect">
               <Pills options={BG_OPTIONS} value={profile.background_effect} onChange={v => patch({ background_effect: v })} />
             </Field>
@@ -448,7 +448,7 @@ function Dashboard() {
             )}
           </Section>
 
-          <Section title="// EFFECTS">
+          <Section title="Effects">
             <Toggle label="Click burst" checked={profile.click_effect} onChange={v => patch({ click_effect: v })} />
             {profile.click_effect && (
               <Field label="Click style">
