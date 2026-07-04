@@ -473,7 +473,7 @@ function Dashboard() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="glass p-5 space-y-3">
-      <h2 className="font-mono text-xs tracking-wider opacity-70">{title}</h2>
+      <h2 className="text-xs font-semibold uppercase tracking-widest opacity-70">{title}</h2>
       {children}
     </section>
   );
