@@ -20,7 +20,7 @@ function AuthPage() {
 
   const signIn = async () => {
     setLoading(true);
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/dashboard" });
+    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
     if (res.error) { console.error(res.error); setLoading(false); return; }
     if (res.redirected) return;
     navigate({ to: "/dashboard" });

@@ -67,7 +67,7 @@ function Landing() {
       <section className="relative z-10 mx-auto max-w-4xl px-6 pt-16 pb-24 text-center">
         <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-mono mb-6 animate-fade-in-up">
           <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.85_0.28_145)] animate-pulse" />
-          your bio, but it glows in the dark
+          live now — make yours glow
         </div>
         <h1 className="text-6xl md:text-8xl font-bold tracking-tighter animate-fade-in-up" style={{ animationDelay: "60ms" }}>
           <span className="text-aurora animate-aurora">aurora</span>
@@ -143,7 +143,7 @@ function Landing() {
       </section>
 
       <footer className="relative z-10 border-t border-border/40 py-8 text-center text-xs text-muted-foreground font-mono">
-        aurora.lol — built with bad intentions ✦
+        aurora.lol ✦
       </footer>
     </main>
   );

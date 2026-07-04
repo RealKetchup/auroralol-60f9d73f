@@ -1,11 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const PHRASES = [
-  "aurora.lol",
-  "make.it.glow",
-  "your.profile.shines",
-  "neon.vibes.only",
-];
+const PHRASES = ["aurora.lol/user"];
 
 export function TypewriterTitle() {
   const idxRef = useRef(0);
