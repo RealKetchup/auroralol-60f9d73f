@@ -72,6 +72,7 @@ function Landing() {
         <h1 className="text-6xl md:text-8xl font-bold tracking-tighter animate-fade-in-up" style={{ animationDelay: "60ms" }}>
           <span className="text-aurora animate-aurora">aurora</span>
           <span className="text-foreground">.lol</span>
+          <span className="sr-only"> — make your profile glow</span>
         </h1>
         <p className="mt-6 mx-auto max-w-xl text-lg text-muted-foreground animate-fade-in-up" style={{ animationDelay: "140ms" }}>
           A link-in-bio with <span className="text-foreground font-mono">style</span>.
@@ -92,7 +93,7 @@ function Landing() {
               </span>
             </button>
           )}
-          <a href="#examples" className="rounded-lg px-6 py-3.5 font-medium glass hover:glow-magenta transition-shadow">
+          <a href="#examples" aria-label="Scroll down to example profiles" className="rounded-lg px-6 py-3.5 font-medium glass hover:glow-magenta transition-shadow">
             See examples ↓
           </a>
         </div>
