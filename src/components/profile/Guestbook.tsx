@@ -70,9 +70,8 @@ export function Guestbook({ profileId, isOwner }: { profileId: string; isOwner: 
   };
 
   return (
-    <section className="glass p-5 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold font-mono text-sm tracking-wider opacity-80">// GUESTBOOK</h3>
+    <section className="p-5 space-y-4">
+      <div className="flex items-center justify-end">
         <span className="text-xs text-muted-foreground">{reviews.length} {reviews.length === 1 ? "entry" : "entries"}</span>
       </div>
       {userId ? (

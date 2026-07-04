@@ -1,0 +1,9 @@
+# aurora.lol
+
+> Neon glassmorphic link-in-bio profiles with music, live Discord status, custom links, and a guestbook.
+
+aurora.lol lets anyone create a glowing personal profile page at aurora.lol/username. Profiles support background effects (particles, aurora, stars, matrix), background music with a visualizer, live Discord presence via Lanyard, custom links, and visitor reviews.
+
+## Pages
+
+- [Home](/): What aurora.lol is and example profiles.
