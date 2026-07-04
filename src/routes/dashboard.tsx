@@ -291,7 +291,7 @@ function Dashboard() {
                 <div className="w-20 h-20 rounded-full p-0.5"
                      style={{ background: `linear-gradient(135deg, ${profile.accent_color}, ${profile.secondary_color})` }}>
                   {avatarPreview ? (
-                    <img src={avatarPreview} className="w-full h-full rounded-full object-cover bg-background" alt="" />
+                    <img src={avatarPreview} className="w-full h-full rounded-full object-cover bg-background" alt="Your avatar" />
                   ) : (
                     <div className="w-full h-full rounded-full bg-background flex items-center justify-center font-bold">
                       {profile.username[0].toUpperCase()}
