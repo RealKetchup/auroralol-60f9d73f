@@ -58,17 +58,20 @@ export const Route = createFileRoute("/$username")({
   },
   head: ({ loaderData }) => ({
     meta: loaderData ? [
-      { title: `${loaderData.profile.username}/main — aurora.lol` },
+      { title: `@${loaderData.profile.username} — aurora.lol` },
       { name: "description", content: loaderData.profile.bio || `${loaderData.profile.display_name || loaderData.profile.username} on aurora.lol` },
       { property: "og:title", content: `@${loaderData.profile.username} — aurora.lol` },
       { property: "og:description", content: loaderData.profile.bio || "made with aurora.lol" },
-    ] : [],
+    ] : [
+      { title: "Profile not found — aurora.lol" },
+      { name: "robots", content: "noindex" },
+    ],
   }),
   notFoundComponent: () => (
-    <div className="min-h-screen flex items-center justify-center px-4 font-mono">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="glass p-10 text-center max-w-sm">
         <h1 className="text-4xl font-bold text-aurora">404</h1>
-        <p className="mt-2 text-muted-foreground">ModuleNotFoundError: no profile with that name</p>
+        <p className="mt-2 text-muted-foreground">No profile with that name — yet.</p>
         <Link to="/" className="mt-6 inline-block glass-strong px-4 py-2 rounded-md text-sm hover:glow-purple transition-shadow">
           Claim this username →
         </Link>
@@ -96,13 +99,9 @@ function ProfilePage() {
   const green = profile.secondary_color;
   const speedStyle = { ["--anim-speed" as never]: profile.animation_speed } as React.CSSProperties;
   const isSiteOwner = profile.username.toLowerCase() === "owner";
-  const minimal = profile.profile_style === "minimal";
 
   return (
-    <div className={`min-h-screen relative ${minimal ? "text-[14px] sm:text-[15px]" : "font-mono text-[13px] sm:text-sm"}`} style={speedStyle}>
-      {minimal && (
-        <style>{`.aurora-min h1,.aurora-min h2,.aurora-min h3{font-family:var(--font-space-grotesk,'Space Grotesk'),system-ui,sans-serif}`}</style>
-      )}
+    <div className="min-h-screen relative text-[14px] sm:text-[15px]" style={speedStyle}>
       {bgImageUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
       {profile.background_effect === "particles" && <Particles color={accent} />}
       {profile.background_effect === "aurora" && <AuroraBg accent={accent} secondary={green} />}
@@ -114,141 +113,88 @@ function ProfilePage() {
       {profile.custom_cursor && <CustomCursor accent={accent} secondary={green} />}
       {profile.cursor_trail && <CursorTrail color={accent} />}
 
-      {/* Editor top bar */}
+      {/* Top bar */}
       <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-border/40" style={{ background: "oklch(0.14 0.03 280 / 0.7)" }}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-10 flex items-center justify-between gap-4 text-[11px] sm:text-xs">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-11 flex items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-2 min-w-0">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: green, boxShadow: `0 0 8px ${green}` }} />
-            <span className="truncate"><span style={{ color: accent }}>{profile.username}</span> <span className="opacity-40">/</span> <span style={{ color: green }} className="italic">main</span></span>
+            <span className="truncate font-medium" style={{ color: accent }}>@{profile.username}</span>
           </div>
           <nav className="hidden sm:flex items-center gap-5 opacity-70">
-            {profile.discord_id && <a href="#discord" style={{ color: green }} className="hover:opacity-100">discord.live</a>}
-            <a href="#reviews" style={{ color: green }} className="hover:opacity-100">reviews.db</a>
-            {links.length > 0 && <a href="#links" style={{ color: green }} className="hover:opacity-100">links.py</a>}
+            {profile.discord_id && <a href="#discord" className="hover:opacity-100">Discord</a>}
+            {links.length > 0 && <a href="#links" className="hover:opacity-100">Links</a>}
+            <a href="#guestbook" className="hover:opacity-100">Guestbook</a>
           </nav>
-          <div className="opacity-50 hidden sm:block whitespace-nowrap">Python 3.12 · UTF-8</div>
           {isOwner && (
-            <Link to="/dashboard" className="glass-strong px-2.5 py-1 rounded-md text-[10px] hover:glow-purple transition-shadow">
-              edit
+            <Link to="/dashboard" className="glass-strong px-2.5 py-1 rounded-md text-[11px] hover:glow-purple transition-shadow">
+              Edit profile
             </Link>
           )}
         </div>
       </header>
 
-      <main className={`max-w-5xl mx-auto px-4 sm:px-8 py-16 sm:py-24 ${minimal ? "space-y-10 aurora-min" : "space-y-20"}`}>
-        {/* [00] identity */}
-        <Section index="00" keyword="class" name={`${profile.username}:`} comment={`# profile — ${profile.display_name || profile.username}${isSiteOwner ? " · SITE OWNER 👑" : ""}`} accent={accent} green={green} minimal={minimal}>
-          <CodeWindow filename={`${profile.username}.py`} accent={accent} green={green} status={isSiteOwner ? "OWNER" : undefined} profile={profile}>
-            {minimal ? (
-              <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4">
-                <div className={`w-28 h-28 sm:w-32 sm:h-32 ${avatarShape(profile.avatar_shape)} p-[3px] animate-pulse-glow`}
-                     style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className={`w-full h-full ${avatarShape(profile.avatar_shape)} object-cover bg-background`} />
-                  ) : (
-                    <div className={`w-full h-full ${avatarShape(profile.avatar_shape)} bg-background flex items-center justify-center text-3xl font-bold`}>
-                      {(profile.display_name || profile.username)[0].toUpperCase()}
-                    </div>
-                  )}
+      <main className="max-w-3xl mx-auto px-4 sm:px-8 py-14 sm:py-20 space-y-10">
+        {/* Identity */}
+        <Card accent={accent} green={green} profile={profile} title={`@${profile.username}`} status={isSiteOwner ? "OWNER" : undefined}>
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4">
+            <div className={`w-28 h-28 sm:w-32 sm:h-32 ${avatarShape(profile.avatar_shape)} p-[3px] animate-pulse-glow`}
+                 style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={`${profile.display_name || profile.username}'s avatar`} className={`w-full h-full ${avatarShape(profile.avatar_shape)} object-cover bg-background`} />
+              ) : (
+                <div className={`w-full h-full ${avatarShape(profile.avatar_shape)} bg-background flex items-center justify-center text-3xl font-bold`}>
+                  {(profile.display_name || profile.username)[0].toUpperCase()}
                 </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold">{profile.display_name || profile.username}</h1>
-                  <div className="text-sm opacity-60">@{profile.username}{isSiteOwner && <span className="ml-2">👑</span>}</div>
-                </div>
-                {profile.bio && <p className="max-w-md text-sm sm:text-base opacity-85 whitespace-pre-wrap">{profile.bio}</p>}
-                {profile.roblox_url && <RobloxBadge url={profile.roblox_url} accent={accent} green={green} />}
-              </div>
-            ) : (
-              <div className="p-5 sm:p-6 flex flex-col sm:flex-row gap-5 sm:gap-6 items-center sm:items-start">
-                <div className="shrink-0 relative">
-                  <div className={`w-24 h-24 sm:w-28 sm:h-28 ${avatarShape(profile.avatar_shape)} p-[3px] animate-pulse-glow`}
-                       style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="" className={`w-full h-full ${avatarShape(profile.avatar_shape)} object-cover bg-background`} />
-                    ) : (
-                      <div className={`w-full h-full ${avatarShape(profile.avatar_shape)} bg-background flex items-center justify-center text-3xl font-bold`}>
-                        {(profile.display_name || profile.username)[0].toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  {isSiteOwner && (
-                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-mono px-2 py-0.5 rounded-full whitespace-nowrap"
-                          style={{ background: `linear-gradient(135deg, ${accent}, ${green})`, color: "white", boxShadow: `0 0 12px ${accent}88` }}>
-                      👑 OWNER
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 space-y-2 text-center sm:text-left">
-                  <div><span className="opacity-50">display_name</span> <span style={{ color: accent }}>=</span> <span style={{ color: green }}>&quot;{profile.display_name || profile.username}&quot;</span></div>
-                  <div><span className="opacity-50">username</span> <span style={{ color: accent }}>=</span> <span style={{ color: green }}>&quot;@{profile.username}&quot;</span></div>
-                  {profile.bio && (
-                    <div className="pt-1">
-                      <span className="opacity-50">bio</span> <span style={{ color: accent }}>=</span> <span style={{ color: green }}>&quot;&quot;&quot;</span>
-                      <div style={{ color: green }} className="whitespace-pre-wrap opacity-90 pl-4">{profile.bio}</div>
-                      <span style={{ color: green }}>&quot;&quot;&quot;</span>
-                    </div>
-                  )}
-                  {profile.roblox_url && <div className="pt-2"><RobloxBadge url={profile.roblox_url} accent={accent} green={green} /></div>}
-                </div>
-              </div>
-            )}
-          </CodeWindow>
-        </Section>
+              )}
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">{profile.display_name || profile.username}</h1>
+              <div className="text-sm opacity-60">@{profile.username}{isSiteOwner && <span className="ml-2">👑</span>}</div>
+            </div>
+            {profile.bio && <p className="max-w-md text-sm sm:text-base opacity-85 whitespace-pre-wrap">{profile.bio}</p>}
+            {profile.roblox_url && <RobloxBadge url={profile.roblox_url} accent={accent} green={green} />}
+          </div>
+        </Card>
 
         {profile.discord_id && (
-          <Section id="discord" index="01" keyword="import" name="discord_presence.live" accent={accent} green={green} minimal={minimal}
-                   comment="# streaming live from Discord via Lanyard — updates every 15s">
-            <CodeWindow filename="discord_presence.live" accent={accent} green={green} status="LIVE" statusColor={green} profile={profile}>
+          <SectionBlock id="discord" title="Discord">
+            <Card accent={accent} green={green} profile={profile} title="Live status" status="LIVE" statusColor={green}>
               <div className="p-3"><LanyardCard discordId={profile.discord_id} /></div>
-            </CodeWindow>
-          </Section>
+            </Card>
+          </SectionBlock>
         )}
 
         {links.length > 0 && (
-          <Section id="links" index="02" keyword="from" name="links.py" method=" import *" accent={accent} green={green} minimal={minimal}
-                   comment="# quick jumps — socials, portfolio, whatever">
-            <CodeWindow filename="links.py" accent={accent} green={green} profile={profile}>
+          <SectionBlock id="links" title="Links">
+            <Card accent={accent} green={green} profile={profile} title="Links">
               <div className={`p-4 grid gap-2 ${profile.layout_style === "grid" ? "sm:grid-cols-2" : "grid-cols-1"}`}>
-                {links.map((l: Lnk, i: number) => {
+                {links.map((l: Lnk) => {
                   const kind = detectIcon(l.url);
                   const color = ICON_COLOR[kind];
                   return (
                     <a key={l.id} href={l.url} target="_blank" rel="noreferrer"
-                       className="flex items-center gap-3 rounded-md px-3 py-2 border border-border/50 bg-background/30 hover:-translate-y-0.5 transition-all group">
-                      <span className="flex items-center justify-center w-7 h-7 rounded-md shrink-0"
+                       className="flex items-center gap-3 rounded-md px-3 py-2.5 border border-border/50 bg-background/30 hover:-translate-y-0.5 transition-all group">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-md shrink-0"
                             style={{ background: `${color}22`, color, boxShadow: `0 0 12px ${color}44` }}>
                         <IconFor kind={kind} className="w-4 h-4" />
                       </span>
-                      {minimal ? (
-                        <span className="truncate font-medium">{l.label}</span>
-                      ) : (
-                        <>
-                          <span className="opacity-40 text-[11px]">[{String(i).padStart(2, "0")}]</span>
-                          <span style={{ color: accent }}>open</span>
-                          <span className="opacity-60">(</span>
-                          <span style={{ color: green }} className="truncate">&quot;{l.label}&quot;</span>
-                          <span className="opacity-60">)</span>
-                        </>
-                      )}
+                      <span className="truncate font-medium">{l.label}</span>
                       <span className="ml-auto opacity-30 group-hover:opacity-80 transition-opacity">→</span>
                     </a>
                   );
                 })}
               </div>
-            </CodeWindow>
-          </Section>
+            </Card>
+          </SectionBlock>
         )}
 
-        <Section id="reviews" index={profile.discord_id ? (links.length ? "03" : "02") : "01"}
-                 keyword="import" name="reviews.db" accent={accent} green={green} minimal={minimal}
-                 comment="# leave a note in the guestbook — signed reviewers only">
-          <CodeWindow filename="reviews.db" accent={accent} green={green} profile={profile}>
+        <SectionBlock id="guestbook" title="Guestbook">
+          <Card accent={accent} green={green} profile={profile} title="Guestbook">
             <Guestbook profileId={profile.id} isOwner={isOwner} />
-          </CodeWindow>
-        </Section>
+          </Card>
+        </SectionBlock>
 
         <footer className="text-center text-[11px] text-muted-foreground pt-8">
-          <span className="opacity-40"># </span>
           <Link to="/" className="hover:text-foreground">made with aurora.lol ✦</Link>
         </footer>
       </main>
@@ -266,51 +212,28 @@ function RobloxBadge({ url, accent, green }: { url: string; accent: string; gree
             style={{ background: `radial-gradient(circle, ${accent}, ${green})`, boxShadow: `0 0 16px ${accent}` }}>
         <svg viewBox="0 0 24 24" className="w-3 h-3" fill="white"><path d="M3 3l16 4-4 16L3 3zm5.5 5.5l3 8 5-3-8-5z"/></svg>
       </span>
-      <span className="text-[11px]">roblox.profile()</span>
+      <span className="text-[11px]">Roblox profile</span>
     </a>
   );
 }
-
 
 function avatarShape(s: string) {
   return s === "square" ? "rounded-2xl" : s === "hex" ? "rounded-[30%]" : "rounded-full";
 }
 
-function Section({ id, index, keyword, name, method, comment, accent, green, minimal, children }: {
-  id?: string; index: string; keyword: string; name: string; method?: string; comment?: string;
-  accent: string; green: string; minimal?: boolean; children: React.ReactNode;
-}) {
-  if (minimal) {
-    return (
-      <section id={id} className="space-y-3 animate-fade-in-up">
-        {(comment || name) && (
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight opacity-90">
-            {comment ? comment.replace(/^#\s*/, "") : name}
-          </h2>
-        )}
-        {children}
-      </section>
-    );
-  }
+function SectionBlock({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
     <section id={id} className="space-y-3 animate-fade-in-up">
-      <div className="flex items-baseline gap-2 flex-wrap">
-        <span className="opacity-40 text-[11px]">[{index}]</span>
-        <span style={{ color: accent }} className="font-bold text-base sm:text-lg">{keyword}</span>
-        <span className="text-base sm:text-lg font-semibold">{name}</span>
-        {method && <span style={{ color: accent }} className="text-base sm:text-lg">{method}</span>}
-      </div>
-      {comment && <div style={{ color: green }} className="opacity-70 text-xs sm:text-[13px] pl-6">{comment}</div>}
+      <h2 className="text-lg sm:text-xl font-semibold tracking-tight opacity-90">{title}</h2>
       {children}
     </section>
   );
 }
 
-function CodeWindow({ filename, accent, green, status, statusColor, profile, children }: {
-  filename: string; accent: string; green: string; status?: string; statusColor?: string;
+function Card({ title, accent, green, status, statusColor, profile, children }: {
+  title: string; accent: string; green: string; status?: string; statusColor?: string;
   profile: Profile; children: React.ReactNode;
 }) {
-  const minimal = profile.profile_style === "minimal";
   const alpha = Math.max(0.05, Math.min(0.95, profile.card_opacity));
   const blur = `${profile.card_blur}px`;
   const glow = profile.border_glow
@@ -326,23 +249,20 @@ function CodeWindow({ filename, accent, green, status, statusColor, profile, chi
            WebkitBackdropFilter: `blur(${blur})`,
            boxShadow: glow,
          }}>
-      {!minimal && (
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-border/40 text-[11px]" style={{ background: "oklch(0.11 0.02 280 / 0.6)" }}>
-          <span className="flex gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.65_0.27_25)]" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.85_0.18_80)]" />
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: green }} />
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border/40 text-[11px]" style={{ background: "oklch(0.11 0.02 280 / 0.6)" }}>
+        <span className="flex gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.65_0.27_25)]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.85_0.18_80)]" />
+          <span className="w-2.5 h-2.5 rounded-full" style={{ background: green }} />
+        </span>
+        <span className="opacity-70 truncate">{title}</span>
+        {status && (
+          <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider" style={{ color: statusColor || accent }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor || accent }} /> {status}
           </span>
-          <span className="opacity-70 truncate">{filename}</span>
-          {status && (
-            <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider" style={{ color: statusColor || accent }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor || accent }} /> {status}
-            </span>
-          )}
-        </div>
-      )}
+        )}
+      </div>
       {children}
     </div>
   );
 }
-
