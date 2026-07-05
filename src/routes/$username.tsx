@@ -56,17 +56,59 @@ export const Route = createFileRoute("/$username")({
       .order("position");
     return { profile: profile as Profile, links: (links || []) as Lnk[] };
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData ? [
-      { title: `@${loaderData.profile.username} — aurora.lol` },
-      { name: "description", content: loaderData.profile.bio || `${loaderData.profile.display_name || loaderData.profile.username} on aurora.lol` },
-      { property: "og:title", content: `@${loaderData.profile.username} — aurora.lol` },
-      { property: "og:description", content: loaderData.profile.bio || "made with aurora.lol" },
-    ] : [
-      { title: "Profile not found — aurora.lol" },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
+  head: ({ params, loaderData }) => {
+    const url = `https://auroralol.lovable.app/${params.username}`;
+    if (!loaderData) {
+      return {
+        meta: [
+          { title: "Profile not found — aurora.lol" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    }
+    const p = loaderData.profile;
+    const name = p.display_name || `@${p.username}`;
+    const desc = p.bio && p.bio.length >= 50
+      ? p.bio
+      : (p.bio
+          ? `${p.bio} — ${name}'s neon glassmorphic profile on aurora.lol with links, music, and live Discord status.`
+          : `${name}'s neon glassmorphic profile on aurora.lol — links, music, live Discord status, and a guestbook.`);
+    const title = `${name} (@${p.username}) — aurora.lol`;
+    const image = resolveStorageUrl(p.avatar_url) || undefined;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "profile" },
+        { property: "og:url", content: url },
+        { property: "profile:username", content: p.username },
+        ...(image ? [{ property: "og:image", content: image }, { name: "twitter:image", content: image }] : []),
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ProfilePage",
+            url,
+            mainEntity: {
+              "@type": "Person",
+              name,
+              alternateName: p.username,
+              description: p.bio || undefined,
+              image: image,
+              url,
+            },
+          }),
+        },
+      ],
+    };
+  },
   notFoundComponent: () => (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="glass p-10 text-center max-w-sm">
