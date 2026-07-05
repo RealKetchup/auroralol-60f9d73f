@@ -11,6 +11,33 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Build your own neon glassmorphic profile. Music, links, Discord status, guestbook. Free, with Google sign-in." },
       { property: "og:title", content: "aurora.lol — make your profile glow" },
       { property: "og:description", content: "Your link-in-bio, but it actually slaps. Neon, glass, music, and a guestbook." },
+      { property: "og:url", content: "https://auroralol.lovable.app/" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0b763b86-af56-4e30-a0ef-b9ff91bc2052/id-preview-a03f8ef1--5b2184d9-6ede-44a5-b12d-13a64dfede41.lovable.app-1782406309922.png" },
+      { name: "twitter:title", content: "aurora.lol — make your profile glow" },
+      { name: "twitter:description", content: "Your link-in-bio, but it actually slaps. Neon, glass, music, and a guestbook." },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0b763b86-af56-4e30-a0ef-b9ff91bc2052/id-preview-a03f8ef1--5b2184d9-6ede-44a5-b12d-13a64dfede41.lovable.app-1782406309922.png" },
+    ],
+    links: [{ rel: "canonical", href: "https://auroralol.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "aurora.lol",
+          url: "https://auroralol.lovable.app/",
+          description: "Neon glassmorphic link-in-bio profiles with music, Discord status, and guestbook.",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "aurora.lol",
+          url: "https://auroralol.lovable.app/",
+        }),
+      },
     ],
   }),
   component: Landing,
