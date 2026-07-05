@@ -7,6 +7,17 @@ import { Plus, Trash2, LogOut, ExternalLink, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Dashboard — aurora.lol" },
+      { name: "description", content: "Edit your aurora.lol profile: links, music, Discord status, effects, and colors." },
+      { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Dashboard — aurora.lol" },
+      { property: "og:description", content: "Edit your aurora.lol profile: links, music, Discord status, effects, and colors." },
+      { property: "og:url", content: "https://auroralol.lovable.app/dashboard" },
+    ],
+    links: [{ rel: "canonical", href: "https://auroralol.lovable.app/dashboard" }],
+  }),
   component: Dashboard,
 });
 
