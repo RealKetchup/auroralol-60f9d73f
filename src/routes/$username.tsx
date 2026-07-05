@@ -74,7 +74,7 @@ export const Route = createFileRoute("/$username")({
           ? `${p.bio} — ${name}'s neon glassmorphic profile on aurora.lol with links, music, and live Discord status.`
           : `${name}'s neon glassmorphic profile on aurora.lol — links, music, live Discord status, and a guestbook.`);
     const title = `${name} (@${p.username}) — aurora.lol`;
-    const image = resolveStorageUrl(p.avatar_url) || undefined;
+    const image = p.avatar_url && /^https?:\/\//.test(p.avatar_url) ? p.avatar_url : undefined;
     return {
       meta: [
         { title },
