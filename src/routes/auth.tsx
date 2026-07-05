@@ -5,6 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Sign in — aurora.lol" },
+      { name: "description", content: "Sign in to aurora.lol with Google to build your neon glassmorphic profile page." },
+      { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Sign in — aurora.lol" },
+      { property: "og:description", content: "Sign in to aurora.lol with Google to build your neon glassmorphic profile page." },
+      { property: "og:url", content: "https://auroralol.lovable.app/auth" },
+    ],
+    links: [{ rel: "canonical", href: "https://auroralol.lovable.app/auth" }],
+  }),
   component: AuthPage,
 });
 
