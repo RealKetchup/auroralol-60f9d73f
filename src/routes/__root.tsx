@@ -68,6 +68,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "google-site-verification", content: "Z8ijDZ7C29ioHUEbi9R5zH2J3KGaMWbdD9oKa7cLz2A" },
       { title: "aurora.lol — make your profile glow" },
       { name: "description", content: "Build your own neon glassmorphic profile page. Music, links, Discord status, guestbook. Sign in with Google." },
       { property: "og:title", content: "aurora.lol — make your profile glow" },
