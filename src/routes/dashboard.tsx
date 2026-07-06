@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { resolveStorageUrl } from "@/lib/storage";
+import { ensureUserProfile } from "@/lib/auth-flow";
 import { Plus, Trash2, LogOut, ExternalLink, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -129,16 +130,21 @@ function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate({ to: "/auth" }); return; }
-      const { data: p } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-      if (!p) { toast.error("Profile not found"); setLoading(false); return; }
-      const { data: ls } = await supabase.from("links").select("*").eq("profile_id", user.id).order("position");
-      setProfile(p as Profile);
-      setLinks((ls || []) as Lnk[]);
-      setMusicPath(p.music_url || "");
-      resolveStorageUrl("avatars", p.avatar_url).then(setAvatarPreview);
-      setLoading(false);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { navigate({ to: "/auth" }); return; }
+        const p = await ensureUserProfile(user);
+        const { data: ls, error: linksError } = await supabase.from("links").select("*").eq("profile_id", user.id).order("position");
+        if (linksError) throw linksError;
+        setProfile(p as Profile);
+        setLinks((ls || []) as Lnk[]);
+        setMusicPath(p.music_url || "");
+        resolveStorageUrl("avatars", p.avatar_url).then(setAvatarPreview);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not load dashboard");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [navigate]);
 

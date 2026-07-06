@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureUserProfile, rememberAuthNext } from "@/lib/auth-flow";
 import { Music, Sparkles, MessageCircle, Gamepad2, Link as LinkIcon, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -58,9 +59,12 @@ function Landing() {
   }, []);
 
   const signIn = async () => {
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/dashboard" });
+    rememberAuthNext("/dashboard");
+    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/auth` });
     if (res.error) console.error(res.error);
     if (res.redirected) return;
+    const { data } = await supabase.auth.getUser();
+    if (data.user) await ensureUserProfile(data.user);
     navigate({ to: "/dashboard" });
   };
 
