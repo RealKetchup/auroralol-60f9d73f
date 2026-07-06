@@ -1,7 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
+import { consumeAuthNext, ensureUserProfile, rememberAuthNext } from "@/lib/auth-flow";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -20,21 +21,33 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard" });
+    let active = true;
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!active || !data.user) return;
+      try {
+        await ensureUserProfile(data.user);
+        if (active) window.location.assign(consumeAuthNext());
+      } catch (err) {
+        if (active) setError(err instanceof Error ? err.message : "Could not finish sign in.");
+      }
     });
-  }, [navigate]);
+    return () => { active = false; };
+  }, []);
 
   const signIn = async () => {
+    setError(null);
     setLoading(true);
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
-    if (res.error) { console.error(res.error); setLoading(false); return; }
+    rememberAuthNext("/dashboard");
+    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/auth` });
+    if (res.error) { setError(res.error.message); setLoading(false); return; }
     if (res.redirected) return;
-    navigate({ to: "/dashboard" });
+    const { data } = await supabase.auth.getUser();
+    if (data.user) await ensureUserProfile(data.user);
+    window.location.assign(consumeAuthNext());
   };
 
   return (
@@ -43,6 +56,7 @@ function AuthPage() {
         <Link to="/" className="font-mono text-aurora text-sm">← aurora.lol</Link>
         <h1 className="text-3xl font-bold mt-6">Sign in</h1>
         <p className="text-sm text-muted-foreground mt-2">Google only. We just need your name and avatar to build your profile.</p>
+        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
         <button
           onClick={signIn}
           disabled={loading}
