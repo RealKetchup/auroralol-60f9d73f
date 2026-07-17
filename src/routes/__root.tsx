@@ -1,3 +1,4 @@
+import Maintenance from "@/components/Maintenance";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
