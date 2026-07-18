@@ -161,10 +161,9 @@ export const Maintenance: React.FC = () => {
           className="card-enter card-3d relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
           style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
         >
+          {/* Logo — entire "Aurora.lol" uses the gradient */}
           <div className="flex justify-center mb-6">
-            <span className="text-3xl font-bold">
-              <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
-            </span>
+            <span className="aurora-text text-3xl font-bold">Aurora.lol</span>
           </div>
 
           <div className="flex justify-center mb-8">
@@ -197,7 +196,7 @@ export const Maintenance: React.FC = () => {
           </div>
 
           <div className="mt-10 text-center text-white/30 text-sm border-t border-white/5 pt-6">
-            © 2026 <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
+            © 2026 <span className="aurora-text">Aurora.lol</span>
           </div>
         </div>
       </div>
