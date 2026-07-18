@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-// ─── Particles background ───
+// ─── Particles ───
 const Particles: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -57,9 +57,7 @@ const Particles: React.FC = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />;
 };
 
-// ─── Main Component ───
 export const Maintenance: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -147,8 +145,7 @@ export const Maintenance: React.FC = () => {
         }
       `}</style>
 
-      <div ref={containerRef} className="min-h-screen w-full bg-[#09090B] flex items-center justify-center px-6 relative overflow-hidden">
-        {/* Aurora background orbs */}
+      <div className="min-h-screen w-full bg-[#09090B] flex items-center justify-center px-6 relative overflow-hidden">
         <div className="fixed inset-0 z-0 overflow-hidden">
           <div className="absolute w-[700px] h-[700px] rounded-full bg-purple-500/25 blur-[140px] -top-[100px] -left-[100px] animate-[auroraFloat1_16s_ease-in-out_infinite_alternate]" />
           <div className="absolute w-[600px] h-[600px] rounded-full bg-cyan-400/25 blur-[140px] -bottom-[100px] -right-[100px] animate-[auroraFloat2_20s_ease-in-out_infinite_alternate]" />
@@ -158,12 +155,12 @@ export const Maintenance: React.FC = () => {
 
         <Particles />
 
-        {/* Glass card */}
         <div
           ref={cardRef}
           className="card-enter card-3d relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
           style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
         >
+          {/* Logo — only this uses the aurora gradient */}
           <div className="flex justify-center mb-6">
             <span className="text-3xl font-bold">
               <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
@@ -176,14 +173,12 @@ export const Maintenance: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight leading-[1.15]">
-            <span className="aurora-text">We'll be back soon.</span>
+          <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight leading-[1.15] text-white">
+            We'll be back soon.
           </h1>
 
           <p className="mt-4 text-center text-white/60 text-base md:text-lg max-w-sm mx-auto leading-relaxed">
-            We're currently upgrading Aurora to make everything{' '}
-            <span className="aurora-text font-medium">faster, smoother and more reliable</span>.
-            Thanks for your patience—we'll be online again shortly.
+            We're currently upgrading Aurora to make everything faster, smoother and more reliable. Thanks for your patience—we'll be online again shortly.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -191,18 +186,18 @@ export const Maintenance: React.FC = () => {
               href="#"
               className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
             >
-              <span className="aurora-text">Discord</span>
+              Discord
             </a>
             <a
               href="/status"
               className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
             >
-              <span className="aurora-text">Status Page</span>
+              Status Page
             </a>
           </div>
 
           <div className="mt-10 text-center text-white/30 text-sm border-t border-white/5 pt-6">
-            © 2026 <span className="aurora-text">Aurora.lol</span>
+            © 2026 <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
           </div>
         </div>
       </div>
