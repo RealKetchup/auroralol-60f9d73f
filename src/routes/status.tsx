@@ -57,22 +57,20 @@ const Particles: React.FC = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />;
 };
 
-// ─── Route ───
 export const Route = createFileRoute('/status')({
   component: StatusPage,
 });
 
-// ─── Types ───
 type ServiceStatus = 'operational' | 'degraded' | 'outage' | 'checking';
-
 interface Service {
   label: string;
   status: ServiceStatus;
 }
 
-// ─── Component ───
 function StatusPage() {
   const cardRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
   const [services, setServices] = useState<Service[]>([
@@ -83,9 +81,46 @@ function StatusPage() {
     { label: 'CDN', status: 'checking' },
   ]);
   const [lastUpdated, setLastUpdated] = useState<string>('Loading...');
-  const [overallStatus, setOverallStatus] = useState<'All Systems Operational' | 'Partial Outage' | 'Major Outage'>('Loading...');
+  const [overallStatus, setOverallStatus] = useState<'All Systems Operational' | 'Partial Outage' | 'Major Outage' | 'Loading...'>('Loading...');
 
-  // ─── Status check function ───
+  // ─── Audio handling ───
+  const playAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isMuted) {
+      audio.volume = 0.3;
+      audio.play().catch(err => console.warn('Audio play failed:', err));
+      setIsMuted(false);
+    }
+  };
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.loop = true;
+    }
+    const handleFirstInteraction = () => {
+      playAudio();
+      document.removeEventListener('click', handleFirstInteraction);
+    };
+    document.addEventListener('click', handleFirstInteraction);
+    return () => document.removeEventListener('click', handleFirstInteraction);
+  }, []);
+
+  const toggleMute = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isMuted) {
+      audio.volume = 0.3;
+      audio.play().catch(err => console.warn('Audio play failed:', err));
+      setIsMuted(false);
+    } else {
+      audio.pause();
+      setIsMuted(true);
+    }
+  };
+
+  // ─── Status check ───
   const checkStatuses = async () => {
     setServices(prev => prev.map(s => ({ ...s, status: 'checking' })));
     setLastUpdated('Checking...');
@@ -93,53 +128,36 @@ function StatusPage() {
     const results = { api: false, db: false, storage: false, web: false, cdn: false };
 
     try {
-      // 1. Database – try a lightweight query
       try {
         const { error } = await supabase.from('profiles').select('*', { head: true, count: 'exact' });
         if (error) throw error;
         results.db = true;
-      } catch (e) {
-        results.db = false;
-      }
+      } catch (e) { results.db = false; }
 
-      // 2. API – try a HEAD request to the Supabase REST endpoint
       try {
         const resp = await fetch(`${supabase.supabaseUrl}/rest/v1/`, { method: 'HEAD', headers: { 'apikey': supabase.supabaseKey } });
         results.api = resp.ok;
-      } catch (e) {
-        results.api = false;
-      }
+      } catch (e) { results.api = false; }
 
-      // 3. Storage – try to list a bucket (if you have a public bucket like 'avatars')
       try {
         const { data, error } = await supabase.storage.listBuckets();
         if (error) throw error;
         results.storage = data && data.length >= 0;
-      } catch (e) {
-        results.storage = false;
-      }
+      } catch (e) { results.storage = false; }
 
-      // 4. Web App – check if the current page loads (always true, but simulate a fetch)
       try {
         const resp = await fetch(window.location.origin, { method: 'HEAD', cache: 'no-cache' });
         results.web = resp.ok;
-      } catch (e) {
-        results.web = false;
-      }
+      } catch (e) { results.web = false; }
 
-      // 5. CDN – check a known static asset (e.g., the favicon or a CSS file)
       try {
         const resp = await fetch('/favicon.ico', { method: 'HEAD', cache: 'no-cache' });
         results.cdn = resp.ok;
-      } catch (e) {
-        results.cdn = false;
-      }
-
+      } catch (e) { results.cdn = false; }
     } catch (e) {
       console.error('Status check error:', e);
     }
 
-    // Update services
     setServices([
       { label: 'API', status: results.api ? 'operational' : 'outage' },
       { label: 'Database', status: results.db ? 'operational' : 'outage' },
@@ -148,45 +166,26 @@ function StatusPage() {
       { label: 'CDN', status: results.cdn ? 'operational' : 'degraded' },
     ]);
 
-    // Determine overall status
-    const statusValues = Object.values(results);
-    const allOk = statusValues.every(v => v === true);
-    const anyOutage = statusValues.some(v => v === false);
-    if (allOk) {
-      setOverallStatus('All Systems Operational');
-    } else if (anyOutage) {
-      setOverallStatus('Partial Outage');
-    } else {
-      setOverallStatus('Major Outage');
-    }
+    const allOk = Object.values(results).every(v => v === true);
+    const anyOutage = Object.values(results).some(v => v === false);
+    if (allOk) setOverallStatus('All Systems Operational');
+    else if (anyOutage) setOverallStatus('Partial Outage');
+    else setOverallStatus('Major Outage');
 
-    // Update timestamp
     const now = new Date();
     setLastUpdated(now.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
     }));
   };
 
-  // ─── Auto-refresh and initial load ───
   useEffect(() => {
-    // Check immediately
     checkStatuses();
-
-    // Then every 60 seconds
-    const interval = setInterval(() => {
-      checkStatuses();
-    }, 60000);
-
+    const interval = setInterval(checkStatuses, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // ─── Mouse parallax ───
+  // ─── Parallax ───
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!cardRef.current) return;
@@ -210,12 +209,8 @@ function StatusPage() {
     };
   }, []);
 
-  // ─── Manual refresh ───
-  const handleRefresh = () => {
-    checkStatuses();
-  };
+  const handleRefresh = () => checkStatuses();
 
-  // ─── Status colour mapping ───
   const statusColors = {
     operational: 'bg-emerald-400 shadow-emerald-400/40',
     degraded: 'bg-amber-400 shadow-amber-400/40',
@@ -301,6 +296,17 @@ function StatusPage() {
           className="card-enter card-3d relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
           style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
         >
+          {/* Audio toggle */}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={toggleMute}
+              className="text-white/30 hover:text-white/60 transition-colors text-xl"
+              aria-label={isMuted ? 'Unmute music' : 'Mute music'}
+            >
+              {isMuted ? '🔇' : '🔊'}
+            </button>
+          </div>
+
           <div className="flex items-center justify-between mb-6">
             <span className="aurora-text text-2xl font-bold">Aurora.lol</span>
             <span className="badge-aurora px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider text-white/70">
@@ -349,6 +355,8 @@ function StatusPage() {
             © 2026 <span className="aurora-text">Aurora.lol</span>
           </div>
         </div>
+
+        <audio ref={audioRef} src="/music.mp3" loop />
       </div>
     </>
   );
