@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
+import { supabase } from '@/integrations/supabase/client';
 
 // ─── Particles ───
 const Particles: React.FC = () => {
@@ -56,15 +57,136 @@ const Particles: React.FC = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />;
 };
 
+// ─── Route ───
 export const Route = createFileRoute('/status')({
   component: StatusPage,
 });
 
+// ─── Types ───
+type ServiceStatus = 'operational' | 'degraded' | 'outage' | 'checking';
+
+interface Service {
+  label: string;
+  status: ServiceStatus;
+}
+
+// ─── Component ───
 function StatusPage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
+  const [services, setServices] = useState<Service[]>([
+    { label: 'API', status: 'checking' },
+    { label: 'Database', status: 'checking' },
+    { label: 'Storage', status: 'checking' },
+    { label: 'Web App', status: 'checking' },
+    { label: 'CDN', status: 'checking' },
+  ]);
+  const [lastUpdated, setLastUpdated] = useState<string>('Loading...');
+  const [overallStatus, setOverallStatus] = useState<'All Systems Operational' | 'Partial Outage' | 'Major Outage'>('Loading...');
 
+  // ─── Status check function ───
+  const checkStatuses = async () => {
+    setServices(prev => prev.map(s => ({ ...s, status: 'checking' })));
+    setLastUpdated('Checking...');
+
+    const results = { api: false, db: false, storage: false, web: false, cdn: false };
+
+    try {
+      // 1. Database – try a lightweight query
+      try {
+        const { error } = await supabase.from('profiles').select('*', { head: true, count: 'exact' });
+        if (error) throw error;
+        results.db = true;
+      } catch (e) {
+        results.db = false;
+      }
+
+      // 2. API – try a HEAD request to the Supabase REST endpoint
+      try {
+        const resp = await fetch(`${supabase.supabaseUrl}/rest/v1/`, { method: 'HEAD', headers: { 'apikey': supabase.supabaseKey } });
+        results.api = resp.ok;
+      } catch (e) {
+        results.api = false;
+      }
+
+      // 3. Storage – try to list a bucket (if you have a public bucket like 'avatars')
+      try {
+        const { data, error } = await supabase.storage.listBuckets();
+        if (error) throw error;
+        results.storage = data && data.length >= 0;
+      } catch (e) {
+        results.storage = false;
+      }
+
+      // 4. Web App – check if the current page loads (always true, but simulate a fetch)
+      try {
+        const resp = await fetch(window.location.origin, { method: 'HEAD', cache: 'no-cache' });
+        results.web = resp.ok;
+      } catch (e) {
+        results.web = false;
+      }
+
+      // 5. CDN – check a known static asset (e.g., the favicon or a CSS file)
+      try {
+        const resp = await fetch('/favicon.ico', { method: 'HEAD', cache: 'no-cache' });
+        results.cdn = resp.ok;
+      } catch (e) {
+        results.cdn = false;
+      }
+
+    } catch (e) {
+      console.error('Status check error:', e);
+    }
+
+    // Update services
+    setServices([
+      { label: 'API', status: results.api ? 'operational' : 'outage' },
+      { label: 'Database', status: results.db ? 'operational' : 'outage' },
+      { label: 'Storage', status: results.storage ? 'operational' : 'degraded' },
+      { label: 'Web App', status: results.web ? 'operational' : 'outage' },
+      { label: 'CDN', status: results.cdn ? 'operational' : 'degraded' },
+    ]);
+
+    // Determine overall status
+    const statusValues = Object.values(results);
+    const allOk = statusValues.every(v => v === true);
+    const anyOutage = statusValues.some(v => v === false);
+    if (allOk) {
+      setOverallStatus('All Systems Operational');
+    } else if (anyOutage) {
+      setOverallStatus('Partial Outage');
+    } else {
+      setOverallStatus('Major Outage');
+    }
+
+    // Update timestamp
+    const now = new Date();
+    setLastUpdated(now.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }));
+  };
+
+  // ─── Auto-refresh and initial load ───
+  useEffect(() => {
+    // Check immediately
+    checkStatuses();
+
+    // Then every 60 seconds
+    const interval = setInterval(() => {
+      checkStatuses();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // ─── Mouse parallax ───
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!cardRef.current) return;
@@ -88,19 +210,24 @@ function StatusPage() {
     };
   }, []);
 
-  const services = [
-    { label: 'API', status: 'operational' },
-    { label: 'Database', status: 'operational' },
-    { label: 'Storage', status: 'operational' },
-    { label: 'Web App', status: 'maintenance' },
-    { label: 'CDN', status: 'operational' },
-  ];
+  // ─── Manual refresh ───
+  const handleRefresh = () => {
+    checkStatuses();
+  };
 
+  // ─── Status colour mapping ───
   const statusColors = {
     operational: 'bg-emerald-400 shadow-emerald-400/40',
     degraded: 'bg-amber-400 shadow-amber-400/40',
     outage: 'bg-red-400 shadow-red-400/40',
-    maintenance: 'bg-blue-400 shadow-blue-400/40',
+    checking: 'bg-blue-400/50 shadow-blue-400/20 animate-pulse',
+  };
+
+  const statusTextColour = {
+    operational: 'text-emerald-400',
+    degraded: 'text-amber-400',
+    outage: 'text-red-400',
+    checking: 'text-blue-400/50',
   };
 
   return (
@@ -139,6 +266,7 @@ function StatusPage() {
           backdrop-filter: blur(4px);
           border: 1px solid rgba(139,92,246,0.3);
           transition: all 0.25s ease;
+          cursor: pointer;
         }
         .btn-aurora:hover {
           background: rgba(255,255,255,0.08);
@@ -181,8 +309,17 @@ function StatusPage() {
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center mb-6">
-            <div className="text-xl font-semibold text-white">All Systems Operational</div>
-            <div className="text-white/30 text-sm mt-1">Last updated: July 18, 2026 — 14:32 UTC</div>
+            <div className={`text-xl font-semibold ${
+              overallStatus === 'All Systems Operational' ? 'text-emerald-400' :
+              overallStatus === 'Partial Outage' ? 'text-amber-400' :
+              overallStatus === 'Major Outage' ? 'text-red-400' :
+              'text-white/50'
+            }`}>
+              {overallStatus}
+            </div>
+            <div className="text-white/30 text-sm mt-1">
+              Last updated: {lastUpdated}
+            </div>
           </div>
 
           <div className="divide-y divide-white/10">
@@ -190,20 +327,22 @@ function StatusPage() {
               <div key={svc.label} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                 <span className="text-white/70 text-sm font-medium">{svc.label}</span>
                 <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${statusColors[svc.status as keyof typeof statusColors]} shadow-lg`} />
-                  <span className="text-white/80 text-sm font-medium capitalize">{svc.status}</span>
+                  <span className={`w-2.5 h-2.5 rounded-full ${statusColors[svc.status]} shadow-lg`} />
+                  <span className={`text-sm font-medium capitalize ${statusTextColour[svc.status]}`}>
+                    {svc.status}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 flex justify-center">
-            <Link
-              to="/"
+          <div className="mt-6 flex justify-center gap-3">
+            <button
+              onClick={handleRefresh}
               className="btn-aurora rounded-full px-6 py-2.5 text-sm font-medium text-white/80"
             >
-              ← Back to Aurora
-            </Link>
+              ↻ Refresh
+            </button>
           </div>
 
           <div className="mt-6 text-center text-white/30 text-xs border-t border-white/5 pt-4">
