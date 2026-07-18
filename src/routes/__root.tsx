@@ -74,7 +74,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      // Inline favicon – prevents 404 for /favicon.ico
+      { rel: "icon", href: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -95,7 +99,9 @@ function RootShell({ children }: { children: ReactNode }) {
     </html>
   );
 }
+
 const MAINTENANCE_MODE = true;
+
 function RootComponent() {
   if (MAINTENANCE_MODE) {
     return <Maintenance />;
