@@ -95,7 +95,7 @@ function RootShell({ children }: { children: ReactNode }) {
     </html>
   );
 }
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 function RootComponent() {
   if (MAINTENANCE_MODE) {
     return <Maintenance />;
