@@ -70,7 +70,7 @@ interface Service {
 function StatusPage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
   const [services, setServices] = useState<Service[]>([
@@ -84,16 +84,6 @@ function StatusPage() {
   const [overallStatus, setOverallStatus] = useState<'All Systems Operational' | 'Partial Outage' | 'Major Outage' | 'Loading...'>('Loading...');
 
   // ─── Audio handling ───
-  const playAudio = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (isMuted) {
-      audio.volume = 0.3;
-      audio.play().catch(err => console.warn('Audio play failed:', err));
-      setIsMuted(false);
-    }
-  };
-
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -101,21 +91,23 @@ function StatusPage() {
     audio.volume = 0.3;
     audio.loop = true;
 
-    // Try to play immediately (unmuted)
-    audio.play().catch(() => {
-      setIsMuted(true);
-    });
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        setIsMuted(true);
+      });
+    }
 
-    const handleFirstInteraction = () => {
+    const handleInteraction = () => {
       if (isMuted) {
         audio.play().catch(() => {});
         setIsMuted(false);
       }
-      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('click', handleInteraction);
     };
-    document.addEventListener('click', handleFirstInteraction);
 
-    return () => document.removeEventListener('click', handleFirstInteraction);
+    document.addEventListener('click', handleInteraction);
+    return () => document.removeEventListener('click', handleInteraction);
   }, []);
 
   const toggleMute = () => {
