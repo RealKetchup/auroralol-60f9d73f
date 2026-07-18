@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from '@tanstack/react-router';
 
 // ─── Particles ───
 const Particles: React.FC = () => {
@@ -160,7 +161,6 @@ export const Maintenance: React.FC = () => {
           className="card-enter card-3d relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
           style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
         >
-          {/* Logo — only this uses the aurora gradient */}
           <div className="flex justify-center mb-6">
             <span className="text-3xl font-bold">
               <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
@@ -188,12 +188,12 @@ export const Maintenance: React.FC = () => {
             >
               Discord
             </a>
-            <a
-              href="/status"
+            <Link
+              to="/status"
               className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
             >
               Status Page
-            </a>
+            </Link>
           </div>
 
           <div className="mt-10 text-center text-white/30 text-sm border-t border-white/5 pt-6">
