@@ -56,12 +56,10 @@ const Particles: React.FC = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />;
 };
 
-// ─── Route ───
 export const Route = createFileRoute('/status')({
   component: StatusPage,
 });
 
-// ─── Component ───
 function StatusPage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
@@ -185,7 +183,7 @@ function StatusPage() {
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center mb-6">
-            <div className="text-xl font-semibold aurora-text">All Systems Operational</div>
+            <div className="text-xl font-semibold text-white">All Systems Operational</div>
             <div className="text-white/30 text-sm mt-1">Last updated: July 18, 2026 — 14:32 UTC</div>
           </div>
 
@@ -195,7 +193,7 @@ function StatusPage() {
                 <span className="text-white/70 text-sm font-medium">{svc.label}</span>
                 <div className="flex items-center gap-2">
                   <span className={`w-2.5 h-2.5 rounded-full ${statusColors[svc.status as keyof typeof statusColors]} shadow-lg`} />
-                  <span className="aurora-text text-sm font-medium capitalize">{svc.status}</span>
+                  <span className="text-white/80 text-sm font-medium capitalize">{svc.status}</span>
                 </div>
               </div>
             ))}
@@ -206,12 +204,12 @@ function StatusPage() {
               to="/"
               className="btn-aurora rounded-full px-6 py-2.5 text-sm font-medium text-white/80"
             >
-              <span className="aurora-text">← Back to Aurora</span>
+              ← Back to Aurora
             </Link>
           </div>
 
           <div className="mt-6 text-center text-white/30 text-xs border-t border-white/5 pt-4">
-            © 2026 <span className="aurora-text">Aurora.lol</span>
+            © 2026 <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
           </div>
         </div>
       </div>
