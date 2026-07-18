@@ -60,9 +60,12 @@ const Particles: React.FC = () => {
 
 export const Maintenance: React.FC = () => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
 
+  // ─── Mouse parallax ───
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!cardRef.current) return;
@@ -84,6 +87,34 @@ export const Maintenance: React.FC = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseleave', handleMouseLeave);
     };
+  }, []);
+
+  // ─── Audio handling ───
+  const toggleMute = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isMuted) {
+      // Unmute: try to play, set volume
+      audio.volume = 0.3;
+      audio.play().catch(err => {
+        // Autoplay may be blocked; we'll ignore the error
+        console.warn('Audio play failed:', err);
+      });
+      setIsMuted(false);
+    } else {
+      // Mute: pause
+      audio.pause();
+      setIsMuted(true);
+    }
+  };
+
+  // On mount, set volume but do not autoplay (user gesture required)
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.loop = true;
+    }
   }, []);
 
   return (
@@ -161,7 +192,17 @@ export const Maintenance: React.FC = () => {
           className="card-enter card-3d relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
           style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
         >
-          {/* Logo — entire "Aurora.lol" uses the gradient */}
+          {/* Audio toggle button */}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={toggleMute}
+              className="text-white/30 hover:text-white/60 transition-colors text-xl"
+              aria-label={isMuted ? 'Unmute music' : 'Mute music'}
+            >
+              {isMuted ? '🔇' : '🔊'}
+            </button>
+          </div>
+
           <div className="flex justify-center mb-6">
             <span className="aurora-text text-3xl font-bold">Aurora.lol</span>
           </div>
@@ -199,6 +240,9 @@ export const Maintenance: React.FC = () => {
             © 2026 <span className="aurora-text">Aurora.lol</span>
           </div>
         </div>
+
+        {/* Hidden audio element */}
+        <audio ref={audioRef} src="/music.mp3" loop />
       </div>
     </>
   );
