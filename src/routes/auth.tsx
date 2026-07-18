@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { consumeAuthNext, ensureUserProfile, rememberAuthNext } from "@/lib/auth-flow";
+import {
+  consumeAuthNext,
+  ensureUserProfile,
+  rememberAuthNext,
+} from "@/lib/auth-flow";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -20,9 +24,17 @@ export const Route = createFileRoute("/auth")({
         content:
           "Sign in to aurora.lol with Google to build your neon glassmorphic profile page.",
       },
-      { property: "og:url", content: "https://www.auroras.lol/auth" },
+      {
+        property: "og:url",
+        content: "https://www.auroras.lol/auth",
+      },
     ],
-    links: [{ rel: "canonical", href: "https://www.auroras.lol/auth" }],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://www.auroras.lol/auth",
+      },
+    ],
   }),
   component: AuthPage,
 });
@@ -34,11 +46,15 @@ function AuthPage() {
   useEffect(() => {
     let active = true;
 
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!active || !data.user) return;
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!active || !user) return;
 
       try {
-        await ensureUserProfile(data.user);
+        await ensureUserProfile(user);
         if (active) {
           window.location.assign(consumeAuthNext());
         }
@@ -51,7 +67,9 @@ function AuthPage() {
           );
         }
       }
-    });
+    };
+
+    checkUser();
 
     return () => {
       active = false;
@@ -67,7 +85,7 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: "https://www.auroras.lol/auth",
       },
     });
 
@@ -84,18 +102,14 @@ function AuthPage() {
           ← aurora.lol
         </Link>
 
-        <h1 className="text-3xl font-bold mt-6">
-          Sign in
-        </h1>
+        <h1 className="text-3xl font-bold mt-6">Sign in</h1>
 
         <p className="text-sm text-muted-foreground mt-2">
           Google only. We just need your name and avatar to build your profile.
         </p>
 
         {error && (
-          <p className="mt-4 text-sm text-destructive">
-            {error}
-          </p>
+          <p className="mt-4 text-sm text-destructive">{error}</p>
         )}
 
         <button
