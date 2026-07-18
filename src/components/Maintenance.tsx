@@ -61,9 +61,10 @@ const Particles: React.FC = () => {
 export const Maintenance: React.FC = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [isMuted, setIsMuted] = useState(false); // start unmuted
+  const [isMuted, setIsMuted] = useState<boolean>(false); // default unmuted
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   // ─── Mouse parallax ───
   useEffect(() => {
@@ -89,18 +90,7 @@ export const Maintenance: React.FC = () => {
     };
   }, []);
 
-  // ─── Audio handling ───
-  const playAudio = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (isMuted) {
-      audio.volume = 0.3;
-      audio.play().catch(err => console.warn('Audio play failed:', err));
-      setIsMuted(false);
-    }
-  };
-
+  // ─── Audio logic ───
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -108,23 +98,28 @@ export const Maintenance: React.FC = () => {
     audio.volume = 0.3;
     audio.loop = true;
 
-    // Try to play immediately (unmuted)
-    audio.play().catch(() => {
-      // If autoplay is blocked, fallback to muted state
-      setIsMuted(true);
-    });
+    // Attempt to play immediately (unmuted)
+    const playPromise = audio.play();
 
-    // Also listen for first user interaction to unmute if needed
-    const handleFirstInteraction = () => {
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Autoplay was blocked – set muted state to true
+        setIsMuted(true);
+      });
+    }
+
+    // One‑time interaction listener to unmute if needed
+    const handleInteraction = () => {
       if (isMuted) {
         audio.play().catch(() => {});
         setIsMuted(false);
       }
-      document.removeEventListener('click', handleFirstInteraction);
+      setHasInteracted(true);
+      document.removeEventListener('click', handleInteraction);
     };
-    document.addEventListener('click', handleFirstInteraction);
 
-    return () => document.removeEventListener('click', handleFirstInteraction);
+    document.addEventListener('click', handleInteraction);
+    return () => document.removeEventListener('click', handleInteraction);
   }, []);
 
   const toggleMute = () => {
