@@ -61,7 +61,7 @@ const Particles: React.FC = () => {
 export const Maintenance: React.FC = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false); // start unmuted
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
 
@@ -102,13 +102,24 @@ export const Maintenance: React.FC = () => {
   };
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.3;
-      audioRef.current.loop = true;
-    }
+    const audio = audioRef.current;
+    if (!audio) return;
 
+    audio.volume = 0.3;
+    audio.loop = true;
+
+    // Try to play immediately (unmuted)
+    audio.play().catch(() => {
+      // If autoplay is blocked, fallback to muted state
+      setIsMuted(true);
+    });
+
+    // Also listen for first user interaction to unmute if needed
     const handleFirstInteraction = () => {
-      playAudio();
+      if (isMuted) {
+        audio.play().catch(() => {});
+        setIsMuted(false);
+      }
       document.removeEventListener('click', handleFirstInteraction);
     };
     document.addEventListener('click', handleFirstInteraction);
