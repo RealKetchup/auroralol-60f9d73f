@@ -1,17 +1,18 @@
-import React, { useEffect, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
 
-// ─── Particles (same as above) ───
+// ─── Particles background ───
 const Particles: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
     let w: number, h: number;
     const particles: Array<{ x: number; y: number; vx: number; vy: number; size: number }> = [];
-    const COUNT = 60;
+    const COUNT = 80;
 
     const resize = () => {
       w = canvas.width = window.innerWidth;
@@ -24,8 +25,8 @@ const Particles: React.FC = () => {
       particles.push({
         x: Math.random() * w,
         y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.15,
-        vy: (Math.random() - 0.5) * 0.15,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.2,
         size: Math.random() * 1.5 + 0.5,
       });
     }
@@ -40,7 +41,7 @@ const Particles: React.FC = () => {
         if (p.y < 0 || p.y > h) p.vy *= -1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.10)';
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
         ctx.fill();
       }
       animationId = requestAnimationFrame(draw);
@@ -57,47 +58,34 @@ const Particles: React.FC = () => {
 };
 
 // ─── Main Component ───
-export const StatusPage: React.FC = () => {
+export const Maintenance: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const springX = useSpring(x, { stiffness: 100, damping: 30 });
-  const springY = useSpring(y, { stiffness: 100, damping: 30 });
-
-  const rotateX = useTransform(springY, [-0.5, 0.5], [4, -4]);
-  const rotateY = useTransform(springX, [-0.5, 0.5], [-4, 4]);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
+      if (!cardRef.current) return;
+      const rect = cardRef.current.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      const nx = (e.clientX - cx) / rect.width;
-      const ny = (e.clientY - cy) / rect.height;
-      x.set(nx);
-      y.set(ny);
+      const x = (e.clientX - cx) / rect.width;
+      const y = (e.clientY - cy) / rect.height;
+      setRotateX(-y * 6);
+      setRotateY(x * 6);
+    };
+    const handleMouseLeave = () => {
+      setRotateX(0);
+      setRotateY(0);
     };
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [x, y]);
-
-  // Status data
-  const services = [
-    { label: 'API', status: 'operational' },
-    { label: 'Database', status: 'operational' },
-    { label: 'Storage', status: 'operational' },
-    { label: 'Web App', status: 'maintenance' },
-    { label: 'CDN', status: 'operational' },
-  ];
-
-  const statusColors = {
-    operational: 'bg-emerald-400 shadow-emerald-400/40',
-    degraded: 'bg-amber-400 shadow-amber-400/40',
-    outage: 'bg-red-400 shadow-red-400/40',
-    maintenance: 'bg-blue-400 shadow-blue-400/40',
-  };
+    window.addEventListener('mouseleave', handleMouseLeave);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
 
   return (
     <>
@@ -108,15 +96,23 @@ export const StatusPage: React.FC = () => {
         }
         @keyframes auroraFloat1 {
           0% { transform: translate(0,0) scale(1); }
-          100% { transform: translate(70px,-50px) scale(1.1); }
+          100% { transform: translate(80px,-60px) scale(1.15); }
         }
         @keyframes auroraFloat2 {
           0% { transform: translate(0,0) scale(1); }
-          100% { transform: translate(-60px,40px) scale(1.15); }
+          100% { transform: translate(-70px,50px) scale(1.2); }
         }
         @keyframes auroraFloat3 {
           0% { transform: translate(-50%,-50%) scale(1); }
-          100% { transform: translate(-50%,-50%) translate(30px,-20px) scale(1.05); }
+          100% { transform: translate(-50%,-50%) translate(40px,-30px) scale(1.1); }
+        }
+        @keyframes auroraFloat4 {
+          0% { transform: translate(0,0) scale(1); }
+          100% { transform: translate(-50px,40px) scale(1.25); }
+        }
+        @keyframes fadeUp {
+          0% { opacity: 0; transform: translateY(30px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
         .aurora-text {
           background: linear-gradient(90deg, #8b5cf6, #22d3ee, #f472b6, #8b5cf6);
@@ -136,80 +132,82 @@ export const StatusPage: React.FC = () => {
           background: rgba(255,255,255,0.08);
           border-color: rgba(34,211,238,0.5);
           box-shadow: 0 0 30px rgba(139,92,246,0.15);
+          transform: scale(1.03);
         }
         .badge-aurora {
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(139,92,246,0.2);
         }
+        .card-enter {
+          animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .card-3d {
+          transition: transform 0.1s ease-out;
+          transform-style: preserve-3d;
+        }
       `}</style>
 
       <div ref={containerRef} className="min-h-screen w-full bg-[#09090B] flex items-center justify-center px-6 relative overflow-hidden">
-        {/* Aurora background */}
+        {/* Aurora background orbs */}
         <div className="fixed inset-0 z-0 overflow-hidden">
-          <div className="absolute w-[600px] h-[600px] rounded-full bg-purple-500/20 blur-[140px] -top-[80px] -left-[80px] animate-[auroraFloat1_16s_ease-in-out_infinite_alternate]" />
-          <div className="absolute w-[500px] h-[500px] rounded-full bg-cyan-400/20 blur-[140px] -bottom-[80px] -right-[80px] animate-[auroraFloat2_20s_ease-in-out_infinite_alternate]" />
-          <div className="absolute w-[400px] h-[400px] rounded-full bg-pink-500/20 blur-[140px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-[auroraFloat3_24s_ease-in-out_infinite_alternate]" />
+          <div className="absolute w-[700px] h-[700px] rounded-full bg-purple-500/25 blur-[140px] -top-[100px] -left-[100px] animate-[auroraFloat1_16s_ease-in-out_infinite_alternate]" />
+          <div className="absolute w-[600px] h-[600px] rounded-full bg-cyan-400/25 blur-[140px] -bottom-[100px] -right-[100px] animate-[auroraFloat2_20s_ease-in-out_infinite_alternate]" />
+          <div className="absolute w-[500px] h-[500px] rounded-full bg-pink-500/25 blur-[140px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-[auroraFloat3_24s_ease-in-out_infinite_alternate]" />
+          <div className="absolute w-[400px] h-[400px] rounded-full bg-amber-400/25 blur-[140px] top-[20%] right-[10%] animate-[auroraFloat4_18s_ease-in-out_infinite_alternate]" />
         </div>
 
         <Particles />
 
         {/* Glass card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
-          className="relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
+        <div
+          ref={cardRef}
+          className="card-enter card-3d relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
+          style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <span className="text-2xl font-bold">
+          <div className="flex justify-center mb-6">
+            <span className="text-3xl font-bold">
               <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
             </span>
+          </div>
+
+          <div className="flex justify-center mb-8">
             <span className="badge-aurora px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider text-white/70">
-              Status
+              Maintenance in progress
             </span>
           </div>
 
-          {/* Summary */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center mb-6">
-            <div className="text-xl font-semibold aurora-text">All Systems Operational</div>
-            <div className="text-white/30 text-sm mt-1">Last updated: July 18, 2026 — 14:32 UTC</div>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight leading-[1.15]">
+            <span className="aurora-text">We'll be back soon.</span>
+          </h1>
 
-          {/* Service list */}
-          <div className="divide-y divide-white/10">
-            {services.map((svc) => (
-              <div key={svc.label} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                <span className="text-white/70 text-sm font-medium">{svc.label}</span>
-                <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${statusColors[svc.status as keyof typeof statusColors]} shadow-lg`} />
-                  <span className="aurora-text text-sm font-medium capitalize">{svc.status}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="mt-4 text-center text-white/60 text-base md:text-lg max-w-sm mx-auto leading-relaxed">
+            We're currently upgrading Aurora to make everything{' '}
+            <span className="aurora-text font-medium">faster, smoother and more reliable</span>.
+            Thanks for your patience—we'll be online again shortly.
+          </p>
 
-          {/* Back link */}
-          <div className="mt-6 flex justify-center">
-            <motion.a
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <a
               href="#"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="btn-aurora rounded-full px-6 py-2.5 text-sm font-medium text-white/80"
+              className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
             >
-              <span className="aurora-text">← Back to Aurora</span>
-            </motion.a>
+              <span className="aurora-text">Discord</span>
+            </a>
+            <a
+              href="/status"
+              className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
+            >
+              <span className="aurora-text">Status Page</span>
+            </a>
           </div>
 
-          {/* Footer */}
-          <div className="mt-6 text-center text-white/30 text-xs border-t border-white/5 pt-4">
+          <div className="mt-10 text-center text-white/30 text-sm border-t border-white/5 pt-6">
             © 2026 <span className="aurora-text">Aurora.lol</span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </>
   );
 };
 
-export default StatusPage;
+export default Maintenance;
