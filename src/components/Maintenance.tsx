@@ -90,15 +90,49 @@ export const Maintenance: React.FC = () => {
   }, []);
 
   // ─── Audio handling ───
+  const playAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // If currently muted, unmute and play
+    if (isMuted) {
+      audio.volume = 0.3;
+      audio.play().catch(err => {
+        // Autoplay may be blocked; ignore the error
+        console.warn('Audio play failed:', err);
+      });
+      setIsMuted(false);
+    }
+  };
+
+  // On mount, set volume but do not autoplay (user gesture required)
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.loop = true;
+    }
+
+    // Add a one-time click listener to the document to unmute and play audio
+    const handleFirstInteraction = () => {
+      playAudio();
+      document.removeEventListener('click', handleFirstInteraction);
+    };
+    document.addEventListener('click', handleFirstInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+    };
+  }, []);
+
+  // ─── Toggle mute manually ───
   const toggleMute = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (isMuted) {
-      // Unmute: try to play, set volume
+      // Unmute: try to play
       audio.volume = 0.3;
       audio.play().catch(err => {
-        // Autoplay may be blocked; we'll ignore the error
         console.warn('Audio play failed:', err);
       });
       setIsMuted(false);
@@ -109,13 +143,11 @@ export const Maintenance: React.FC = () => {
     }
   };
 
-  // On mount, set volume but do not autoplay (user gesture required)
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.3;
-      audioRef.current.loop = true;
-    }
-  }, []);
+  // ─── Handle refresh on link click ───
+  const handleRefreshLink = (e: React.MouseEvent<HTMLAnchorElement>, to: string) => {
+    e.preventDefault();
+    window.location.href = to;
+  };
 
   return (
     <>
@@ -223,13 +255,17 @@ export const Maintenance: React.FC = () => {
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a
-              href="#"
+              href="https://discord.gg/wyz2Zk4xmH"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => handleRefreshLink(e, 'https://discord.gg/wyz2Zk4xmH')}
               className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
             >
               Discord
             </a>
             <Link
               to="/status"
+              onClick={() => window.location.href = '/status'}
               className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
             >
               Status Page
