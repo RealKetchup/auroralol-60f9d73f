@@ -94,56 +94,43 @@ export const Maintenance: React.FC = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    // If currently muted, unmute and play
     if (isMuted) {
       audio.volume = 0.3;
-      audio.play().catch(err => {
-        // Autoplay may be blocked; ignore the error
-        console.warn('Audio play failed:', err);
-      });
+      audio.play().catch(err => console.warn('Audio play failed:', err));
       setIsMuted(false);
     }
   };
 
-  // On mount, set volume but do not autoplay (user gesture required)
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = 0.3;
       audioRef.current.loop = true;
     }
 
-    // Add a one-time click listener to the document to unmute and play audio
     const handleFirstInteraction = () => {
       playAudio();
       document.removeEventListener('click', handleFirstInteraction);
     };
     document.addEventListener('click', handleFirstInteraction);
 
-    return () => {
-      document.removeEventListener('click', handleFirstInteraction);
-    };
+    return () => document.removeEventListener('click', handleFirstInteraction);
   }, []);
 
-  // ─── Toggle mute manually ───
   const toggleMute = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (isMuted) {
-      // Unmute: try to play
       audio.volume = 0.3;
-      audio.play().catch(err => {
-        console.warn('Audio play failed:', err);
-      });
+      audio.play().catch(err => console.warn('Audio play failed:', err));
       setIsMuted(false);
     } else {
-      // Mute: pause
       audio.pause();
       setIsMuted(true);
     }
   };
 
-  // ─── Handle refresh on link click ───
+  // ─── Refresh on link click ───
   const handleRefreshLink = (e: React.MouseEvent<HTMLAnchorElement>, to: string) => {
     e.preventDefault();
     window.location.href = to;
@@ -224,7 +211,7 @@ export const Maintenance: React.FC = () => {
           className="card-enter card-3d relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
           style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
         >
-          {/* Audio toggle button */}
+          {/* Audio toggle */}
           <div className="absolute top-4 right-4">
             <button
               onClick={toggleMute}
@@ -265,7 +252,7 @@ export const Maintenance: React.FC = () => {
             </a>
             <Link
               to="/status"
-              onClick={() => window.location.href = '/status'}
+              onClick={() => { window.location.href = '/status'; }}
               className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
             >
               Status Page
@@ -277,7 +264,6 @@ export const Maintenance: React.FC = () => {
           </div>
         </div>
 
-        {/* Hidden audio element */}
         <audio ref={audioRef} src="/music.mp3" loop />
       </div>
     </>
