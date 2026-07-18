@@ -174,9 +174,7 @@ function StatusPage() {
           style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
         >
           <div className="flex items-center justify-between mb-6">
-            <span className="text-2xl font-bold">
-              <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
-            </span>
+            <span className="aurora-text text-2xl font-bold">Aurora.lol</span>
             <span className="badge-aurora px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider text-white/70">
               Status
             </span>
@@ -209,7 +207,7 @@ function StatusPage() {
           </div>
 
           <div className="mt-6 text-center text-white/30 text-xs border-t border-white/5 pt-4">
-            © 2026 <span className="aurora-text">Aurora</span><span className="text-white/30">.lol</span>
+            © 2026 <span className="aurora-text">Aurora.lol</span>
           </div>
         </div>
       </div>
