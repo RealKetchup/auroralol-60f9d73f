@@ -102,13 +102,19 @@ function RootShell({ children }: { children: ReactNode }) {
 
 const MAINTENANCE_MODE = true;
 
+// ─── Allowed routes during maintenance ───
+const ALLOWED_ROUTES = ['/status'];
+
 function RootComponent() {
-  if (MAINTENANCE_MODE) {
+  const router = useRouter();
+  const currentPath = router.state.location.pathname;
+
+  // Show maintenance unless we're on an allowed route
+  if (MAINTENANCE_MODE && !ALLOWED_ROUTES.includes(currentPath)) {
     return <Maintenance />;
   }
 
   const { queryClient } = Route.useRouteContext();
-  const router = useRouter();
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
