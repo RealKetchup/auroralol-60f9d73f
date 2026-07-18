@@ -70,7 +70,7 @@ interface Service {
 function StatusPage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
   const [services, setServices] = useState<Service[]>([
@@ -95,15 +95,26 @@ function StatusPage() {
   };
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.3;
-      audioRef.current.loop = true;
-    }
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.3;
+    audio.loop = true;
+
+    // Try to play immediately (unmuted)
+    audio.play().catch(() => {
+      setIsMuted(true);
+    });
+
     const handleFirstInteraction = () => {
-      playAudio();
+      if (isMuted) {
+        audio.play().catch(() => {});
+        setIsMuted(false);
+      }
       document.removeEventListener('click', handleFirstInteraction);
     };
     document.addEventListener('click', handleFirstInteraction);
+
     return () => document.removeEventListener('click', handleFirstInteraction);
   }, []);
 
