@@ -8,13 +8,13 @@ import { Music, Sparkles, MessageCircle, Gamepad2, Link as LinkIcon, Wand2 } fro
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "aurora.lol — make your profile glow" },
+      { title: "aurora.lol peak" },
       { name: "description", content: "Build your own neon glassmorphic profile. Music, links, Discord status, guestbook. Free, with Google sign-in." },
-      { property: "og:title", content: "aurora.lol — make your profile glow" },
+      { property: "og:title", content: "aurora.lol — peak" },
       { property: "og:description", content: "Your link-in-bio, but it actually slaps. Neon, glass, music, and a guestbook." },
       { property: "og:url", content: "https://auroralol.lovable.app/" },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0b763b86-af56-4e30-a0ef-b9ff91bc2052/id-preview-a03f8ef1--5b2184d9-6ede-44a5-b12d-13a64dfede41.lovable.app-1782406309922.png" },
-      { name: "twitter:title", content: "aurora.lol — make your profile glow" },
+      { name: "twitter:title", content: "aurora.lol peak" },
       { name: "twitter:description", content: "Your link-in-bio, but it actually slaps. Neon, glass, music, and a guestbook." },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0b763b86-af56-4e30-a0ef-b9ff91bc2052/id-preview-a03f8ef1--5b2184d9-6ede-44a5-b12d-13a64dfede41.lovable.app-1782406309922.png" },
     ],
@@ -98,7 +98,7 @@ function Landing() {
       <section className="relative z-10 mx-auto max-w-4xl px-6 pt-16 pb-24 text-center">
         <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-mono mb-6 animate-fade-in-up">
           <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.85_0.28_145)] animate-pulse" />
-          live now — make yours glow
+          Aurora.Lol
         </div>
         <h1 className="text-6xl md:text-8xl font-bold tracking-tighter animate-fade-in-up" style={{ animationDelay: "60ms" }}>
           <span className="text-aurora animate-aurora">aurora</span>
