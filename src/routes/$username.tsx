@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Crown, Pencil, Link2, Calendar, Star, Users, MessageSquare, BookOpen, User as UserIcon, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveStorageUrl } from "@/lib/storage";
 import { MusicPlayer } from "@/components/profile/MusicPlayer";
@@ -38,6 +39,8 @@ type Profile = {
   avatar_shape: string;
   animation_speed: number;
   profile_style: string;
+  view_count: number;
+  created_at: string;
 };
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
 
@@ -123,24 +126,42 @@ export const Route = createFileRoute("/$username")({
   component: ProfilePage,
 });
 
+type Review = { id: string; author_name: string; rating: number | null; created_at: string };
+
 function ProfilePage() {
   const { profile, links } = Route.useLoaderData();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [musicUrl, setMusicUrl] = useState<string | null>(null);
   const [bgImageUrl, setBgImageUrl] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [tab, setTab] = useState<"profile" | "guestbook" | "reviews" | "links">("profile");
 
   useEffect(() => {
     resolveStorageUrl("avatars", profile.avatar_url).then(setAvatarUrl);
     resolveStorageUrl("music", profile.music_url).then(setMusicUrl);
     resolveStorageUrl("avatars", profile.background_image_url).then(setBgImageUrl);
     supabase.auth.getUser().then(({ data }) => setIsOwner(data.user?.id === profile.id));
+    supabase
+      .from("reviews")
+      .select("id,author_name,rating,created_at")
+      .eq("profile_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => setReviews((data || []) as Review[]));
   }, [profile.id, profile.avatar_url, profile.music_url, profile.background_image_url]);
 
   const accent = profile.accent_color;
   const green = profile.secondary_color;
   const speedStyle = { ["--anim-speed" as never]: profile.animation_speed } as React.CSSProperties;
   const isSiteOwner = profile.username.toLowerCase() === "owner";
+  const name = profile.display_name || profile.username;
+
+  const rated = reviews.filter(r => typeof r.rating === "number");
+  const avgRating = rated.length
+    ? (rated.reduce((s, r) => s + (r.rating || 0), 0) / rated.length)
+    : 0;
+  const joined = new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" });
 
   return (
     <div className="min-h-screen relative text-[14px] sm:text-[15px]" style={speedStyle}>
@@ -155,89 +176,222 @@ function ProfilePage() {
       {profile.custom_cursor && <CustomCursor accent={accent} secondary={green} />}
       {profile.cursor_trail && <CursorTrail color={accent} />}
 
-      {/* Top bar */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-border/40" style={{ background: "oklch(0.14 0.03 280 / 0.7)" }}>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-11 flex items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: green, boxShadow: `0 0 8px ${green}` }} />
-            <span className="truncate font-medium" style={{ color: accent }}>@{profile.username}</span>
-          </div>
-          <nav className="hidden sm:flex items-center gap-5 opacity-70">
-            {profile.discord_id && <a href="#discord" className="hover:opacity-100">Discord</a>}
-            {links.length > 0 && <a href="#links" className="hover:opacity-100">Links</a>}
-            <a href="#guestbook" className="hover:opacity-100">Guestbook</a>
+      {/* Nav */}
+      <header className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: "oklch(0.12 0.03 280 / 0.72)" }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <Sparkles className="w-5 h-5" style={{ color: accent }} />
+            <span className="font-bold text-lg tracking-tight">aurora.lol</span>
+          </Link>
+
+          <nav className="mx-auto hidden md:flex items-center gap-1 text-sm">
+            {([
+              ["profile", "Profile"],
+              ["guestbook", "Guestbook"],
+              ["reviews", "Reviews"],
+              ["links", "Links"],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => {
+                  setTab(key);
+                  document.getElementById(key)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="px-4 py-1.5 rounded-full transition-colors"
+                style={tab === key
+                  ? { border: `1px solid ${accent}88`, background: `${accent}18`, color: "inherit", boxShadow: `0 0 18px -6px ${accent}` }
+                  : { color: "var(--muted-foreground)" }}
+              >
+                {label}
+              </button>
+            ))}
           </nav>
-          {isOwner && (
-            <Link to="/dashboard" className="glass-strong px-2.5 py-1 rounded-md text-[11px] hover:glow-purple transition-shadow">
-              Edit profile
-            </Link>
-          )}
+
+          <div className="ml-auto flex items-center gap-3">
+            {isOwner && (
+              <Link
+                to="/dashboard"
+                className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm"
+                style={{ border: `1px solid ${accent}66`, background: `${accent}14` }}
+              >
+                <Pencil className="w-3.5 h-3.5" /> Customize
+              </Link>
+            )}
+            <div className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1" style={{ border: `1px solid ${accent}44`, background: "oklch(0.16 0.03 280 / 0.7)" }}>
+              <Avatar url={avatarUrl} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="sm" />
+              <span className="text-sm truncate max-w-[140px]">{name}</span>
+              {isSiteOwner && <Crown className="w-3.5 h-3.5" style={{ color: "oklch(0.85 0.18 80)" }} />}
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-8 py-14 sm:py-20 space-y-10">
-        {/* Identity */}
-        <Card accent={accent} green={green} profile={profile} title={`@${profile.username}`} status={isSiteOwner ? "OWNER" : undefined}>
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4">
-            <div className={`w-28 h-28 sm:w-32 sm:h-32 ${avatarShape(profile.avatar_shape)} p-[3px] animate-pulse-glow`}
-                 style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={`${profile.display_name || profile.username}'s avatar`} className={`w-full h-full ${avatarShape(profile.avatar_shape)} object-cover bg-background`} />
-              ) : (
-                <div className={`w-full h-full ${avatarShape(profile.avatar_shape)} bg-background flex items-center justify-center text-3xl font-bold`}>
-                  {(profile.display_name || profile.username)[0].toUpperCase()}
-                </div>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* Hero */}
+        <section id="profile" className="animate-fade-in-up rounded-2xl overflow-hidden relative"
+                 style={{
+                   border: `1px solid ${accent}55`,
+                   background: `oklch(0.14 0.02 280 / ${clamp(profile.card_opacity)})`,
+                   backdropFilter: `blur(${profile.card_blur}px)`,
+                   WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
+                   boxShadow: profile.border_glow ? `0 20px 60px -24px ${accent}77, 0 0 0 1px ${accent}22 inset` : undefined,
+                 }}>
+          {/* aurora banner */}
+          <div aria-hidden className="absolute inset-0 pointer-events-none opacity-80"
+               style={{
+                 background: `radial-gradient(ellipse 60% 120% at 78% 10%, ${accent}55, transparent 65%),
+                              radial-gradient(ellipse 70% 90% at 95% 80%, ${green}44, transparent 65%)`,
+               }} />
+          <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+            <Avatar url={avatarUrl} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="lg" />
+            <div className="min-w-0 flex-1 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight truncate">{name}</h1>
+                {isSiteOwner && <Crown className="w-6 h-6 shrink-0" style={{ color: "oklch(0.85 0.18 80)", filter: `drop-shadow(0 0 8px oklch(0.85 0.18 80))` }} />}
+              </div>
+              <div className="mt-1 text-muted-foreground">@{profile.username}</div>
+              <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs">
+                {isSiteOwner && (
+                  <span className="rounded-full px-3 py-1 font-medium" style={{ background: accent, color: "oklch(0.12 0.02 280)" }}>Owner</span>
+                )}
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Calendar className="w-3.5 h-3.5" /> Joined {joined}
+                </span>
+              </div>
+              {profile.bio && <p className="mt-4 text-sm sm:text-base opacity-90 whitespace-pre-wrap">{profile.bio}</p>}
+            </div>
+            <span className="absolute top-5 right-5 flex items-center gap-2 rounded-full px-3 py-1 text-xs"
+                  style={{ background: "oklch(0.16 0.03 280 / 0.8)", border: `1px solid ${green}55` }}>
+              <span className="w-2 h-2 rounded-full" style={{ background: green, boxShadow: `0 0 8px ${green}` }} /> Online
+            </span>
+          </div>
+
+          {/* Stats bar */}
+          <div className="relative border-t px-6 sm:px-8 py-5 flex flex-col sm:flex-row items-center gap-6"
+               style={{ borderColor: `${accent}33`, background: "oklch(0.11 0.02 280 / 0.5)" }}>
+            <div className="flex items-center gap-8 sm:gap-12">
+              <Stat label="Guests" value={String(profile.view_count ?? 0)} icon={<Users className="w-3.5 h-3.5" />} />
+              <div className="w-px h-10" style={{ background: `${accent}33` }} />
+              <Stat label="Messages" value={String(reviews.length)} icon={<MessageSquare className="w-3.5 h-3.5" />} />
+              <div className="w-px h-10" style={{ background: `${accent}33` }} />
+              <Stat label="Rating" value={rated.length ? avgRating.toFixed(1) : "—"} icon={<Star className="w-3.5 h-3.5" />} accent={green} />
+            </div>
+            <div className="sm:ml-auto flex items-center gap-3">
+              {links.slice(0, 5).map((l: Lnk) => {
+                const kind = detectIcon(l.url);
+                const color = ICON_COLOR[kind];
+                return (
+                  <a key={l.id} href={l.url} target="_blank" rel="noreferrer" aria-label={l.label} title={l.label}
+                     className="w-11 h-11 rounded-xl flex items-center justify-center hover:-translate-y-0.5 transition-transform"
+                     style={{ border: `1px solid ${color}66`, background: `${color}18`, color, boxShadow: `0 0 18px -8px ${color}` }}>
+                    <IconFor kind={kind} className="w-5 h-5" />
+                  </a>
+                );
+              })}
+              {profile.roblox_url && (
+                <a href={profile.roblox_url} target="_blank" rel="noreferrer" aria-label="Roblox profile"
+                   className="w-11 h-11 rounded-xl flex items-center justify-center hover:-translate-y-0.5 transition-transform"
+                   style={{ border: `1px solid ${accent}66`, background: `${accent}18`, color: accent }}>
+                  <Link2 className="w-5 h-5" />
+                </a>
               )}
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">{profile.display_name || profile.username}</h1>
-              <div className="text-sm opacity-60">@{profile.username}{isSiteOwner && <span className="ml-2">👑</span>}</div>
-            </div>
-            {profile.bio && <p className="max-w-md text-sm sm:text-base opacity-85 whitespace-pre-wrap">{profile.bio}</p>}
-            {profile.roblox_url && <RobloxBadge url={profile.roblox_url} accent={accent} green={green} />}
           </div>
-        </Card>
+        </section>
 
-        {profile.discord_id && (
-          <SectionBlock id="discord" title="Discord">
-            <Card accent={accent} green={green} profile={profile} title="Live status" status="LIVE" statusColor={green}>
-              <div className="p-3"><LanyardCard discordId={profile.discord_id} /></div>
-            </Card>
-          </SectionBlock>
-        )}
-
-        {links.length > 0 && (
-          <SectionBlock id="links" title="Links">
-            <Card accent={accent} green={green} profile={profile} title="Links">
-              <div className={`p-4 grid gap-2 ${profile.layout_style === "grid" ? "sm:grid-cols-2" : "grid-cols-1"}`}>
-                {links.map((l: Lnk) => {
-                  const kind = detectIcon(l.url);
-                  const color = ICON_COLOR[kind];
-                  return (
-                    <a key={l.id} href={l.url} target="_blank" rel="noreferrer"
-                       className="flex items-center gap-3 rounded-md px-3 py-2.5 border border-border/50 bg-background/30 hover:-translate-y-0.5 transition-all group">
-                      <span className="flex items-center justify-center w-8 h-8 rounded-md shrink-0"
-                            style={{ background: `${color}22`, color, boxShadow: `0 0 12px ${color}44` }}>
-                        <IconFor kind={kind} className="w-4 h-4" />
-                      </span>
-                      <span className="truncate font-medium">{l.label}</span>
-                      <span className="ml-auto opacity-30 group-hover:opacity-80 transition-opacity">→</span>
-                    </a>
-                  );
-                })}
-              </div>
-            </Card>
-          </SectionBlock>
-        )}
-
-        <SectionBlock id="guestbook" title="Guestbook">
-          <Card accent={accent} green={green} profile={profile} title="Guestbook">
+        {/* Grid */}
+        <div className="grid gap-6 lg:grid-cols-[1.85fr_1fr] items-start">
+          <Panel id="guestbook" profile={profile} accent={accent} green={green}
+                 title="Guestbook" icon={<BookOpen className="w-4 h-4" />} titleColor={accent}
+                 right={<span className="text-xs text-muted-foreground">{reviews.length} entries</span>}>
             <Guestbook profileId={profile.id} isOwner={isOwner} />
-          </Card>
-        </SectionBlock>
+          </Panel>
 
-        <footer className="text-center text-[11px] text-muted-foreground pt-8">
-          <Link to="/" className="hover:text-foreground">made with aurora.lol ✦</Link>
+          <div className="space-y-6">
+            {profile.bio && (
+              <Panel profile={profile} accent={accent} green={green} title="About" icon={<UserIcon className="w-4 h-4" />} titleColor={accent}>
+                <p className="px-5 pb-5 text-sm opacity-90 whitespace-pre-wrap">{profile.bio}</p>
+              </Panel>
+            )}
+
+            <Panel id="reviews" profile={profile} accent={accent} green={green} title="Reviews" icon={<Star className="w-4 h-4" />} titleColor={green}>
+              <div className="px-5 pb-5 flex items-end justify-between gap-4">
+                <div>
+                  <div className="text-3xl font-bold flex items-center gap-1">
+                    {rated.length ? avgRating.toFixed(1) : "—"}
+                    <Star className="w-4 h-4" style={{ color: green }} fill={green} />
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">{rated.length} review{rated.length === 1 ? "" : "s"}</div>
+                </div>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <Star key={n} className="w-4 h-4" style={{ color: green, opacity: n <= Math.round(avgRating) ? 1 : 0.25 }}
+                          fill={n <= Math.round(avgRating) ? green : "none"} />
+                  ))}
+                </div>
+              </div>
+            </Panel>
+
+            {profile.discord_id && (
+              <Panel profile={profile} accent={accent} green={green} title="Discord" icon={<Sparkles className="w-4 h-4" />} titleColor={accent}>
+                <div className="px-3 pb-3"><LanyardCard discordId={profile.discord_id} /></div>
+              </Panel>
+            )}
+
+            <Panel profile={profile} accent={accent} green={green} title="Recent Guests" icon={<Users className="w-4 h-4" />} titleColor={accent}>
+              <ul className="px-5 pb-5 space-y-3">
+                {reviews.slice(0, 4).map(r => (
+                  <li key={r.id} className="flex items-center gap-3 text-sm">
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold shrink-0"
+                          style={{ background: `${accent}22`, color: accent }}>
+                      {(r.author_name || "?")[0].toUpperCase()}
+                    </span>
+                    <span className="truncate">{r.author_name}</span>
+                    <span className="ml-auto text-[11px] text-muted-foreground shrink-0">
+                      {new Date(r.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: green, boxShadow: `0 0 6px ${green}` }} />
+                  </li>
+                ))}
+                {reviews.length === 0 && <li className="text-sm text-muted-foreground opacity-70">No guests yet ✦</li>}
+                {reviews.length > 4 && (
+                  <li>
+                    <button onClick={() => document.getElementById("guestbook")?.scrollIntoView({ behavior: "smooth" })}
+                            className="w-full rounded-lg py-2 text-sm transition-colors"
+                            style={{ border: `1px solid ${accent}44`, background: `${accent}12` }}>
+                      View All Guests
+                    </button>
+                  </li>
+                )}
+              </ul>
+            </Panel>
+
+            {links.length > 0 && (
+              <Panel id="links" profile={profile} accent={accent} green={green} title="Links" icon={<Link2 className="w-4 h-4" />} titleColor={accent}>
+                <div className="px-4 pb-4 grid gap-2">
+                  {links.map((l: Lnk) => {
+                    const kind = detectIcon(l.url);
+                    const color = ICON_COLOR[kind];
+                    return (
+                      <a key={l.id} href={l.url} target="_blank" rel="noreferrer"
+                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 border border-border/50 bg-background/30 hover:-translate-y-0.5 transition-all group">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-md shrink-0"
+                              style={{ background: `${color}22`, color, boxShadow: `0 0 12px ${color}44` }}>
+                          <IconFor kind={kind} className="w-4 h-4" />
+                        </span>
+                        <span className="truncate font-medium">{l.label}</span>
+                        <span className="ml-auto opacity-30 group-hover:opacity-80 transition-opacity">→</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </Panel>
+            )}
+          </div>
+        </div>
+
+        <footer className="text-center text-xs text-muted-foreground py-8">
+          © {new Date().getFullYear()} <Link to="/" className="hover:text-foreground">aurora.lol</Link> — built with neon and passion 💖
         </footer>
       </main>
 
@@ -246,65 +400,60 @@ function ProfilePage() {
   );
 }
 
-function RobloxBadge({ url, accent, green }: { url: string; accent: string; green: string }) {
+function clamp(n: number) {
+  return Math.max(0.05, Math.min(0.95, n));
+}
+
+function Stat({ label, value, icon, accent }: { label: string; value: string; icon?: React.ReactNode; accent?: string }) {
   return (
-    <a href={url} target="_blank" rel="noreferrer"
-       className="inline-flex items-center gap-2 glass-strong rounded-full pl-2 pr-4 py-1.5 hover:glow-magenta transition-shadow">
-      <span className="w-6 h-6 rounded-full flex items-center justify-center animate-spin-slow"
-            style={{ background: `radial-gradient(circle, ${accent}, ${green})`, boxShadow: `0 0 16px ${accent}` }}>
-        <svg viewBox="0 0 24 24" className="w-3 h-3" fill="white"><path d="M3 3l16 4-4 16L3 3zm5.5 5.5l3 8 5-3-8-5z"/></svg>
-      </span>
-      <span className="text-[11px]">Roblox profile</span>
-    </a>
+    <div className="text-center">
+      <div className="text-2xl sm:text-3xl font-bold" style={accent ? { color: accent } : undefined}>{value}</div>
+      <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+        {icon}{label}
+      </div>
+    </div>
   );
 }
 
-function avatarShape(s: string) {
-  return s === "square" ? "rounded-2xl" : s === "hex" ? "rounded-[30%]" : "rounded-full";
-}
-
-function SectionBlock({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
-  return (
-    <section id={id} className="space-y-3 animate-fade-in-up">
-      <h2 className="text-lg sm:text-xl font-semibold tracking-tight opacity-90">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Card({ title, accent, green, status, statusColor, profile, children }: {
-  title: string; accent: string; green: string; status?: string; statusColor?: string;
-  profile: Profile; children: React.ReactNode;
+function Avatar({ url, name, shape, accent, green, size }: {
+  url: string | null; name: string; shape: string; accent: string; green: string; size: "sm" | "lg";
 }) {
-  const alpha = Math.max(0.05, Math.min(0.95, profile.card_opacity));
-  const blur = `${profile.card_blur}px`;
-  const glow = profile.border_glow
-    ? `0 12px 40px -12px ${accent}66, 0 0 24px -6px ${green}44, 0 0 1px ${accent}88 inset`
-    : `0 8px 24px -12px rgba(0,0,0,0.4)`;
-  const tilt = profile.tilt_cards ? "tilt-card" : "";
+  const radius = shape === "square" ? "rounded-2xl" : shape === "hex" ? "rounded-[30%]" : "rounded-full";
+  const dim = size === "lg" ? "w-28 h-28 sm:w-36 sm:h-36" : "w-7 h-7";
   return (
-    <div className={`rounded-xl overflow-hidden border ${tilt}`}
-         style={{
-           borderColor: profile.border_glow ? `${accent}55` : `${accent}22`,
-           background: `oklch(0.14 0.02 280 / ${alpha})`,
-           backdropFilter: `blur(${blur})`,
-           WebkitBackdropFilter: `blur(${blur})`,
-           boxShadow: glow,
-         }}>
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border/40 text-[11px]" style={{ background: "oklch(0.11 0.02 280 / 0.6)" }}>
-        <span className="flex gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.65_0.27_25)]" />
-          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.85_0.18_80)]" />
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: green }} />
-        </span>
-        <span className="opacity-70 truncate">{title}</span>
-        {status && (
-          <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider" style={{ color: statusColor || accent }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor || accent }} /> {status}
-          </span>
-        )}
+    <div className={`${dim} ${radius} shrink-0 p-[3px] ${size === "lg" ? "animate-pulse-glow" : ""}`}
+         style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
+      {url ? (
+        <img src={url} alt={`${name}'s avatar`} className={`w-full h-full ${radius} object-cover bg-background`} />
+      ) : (
+        <div className={`w-full h-full ${radius} bg-background flex items-center justify-center font-bold ${size === "lg" ? "text-4xl sm:text-5xl" : "text-xs"}`}>
+          {name[0]?.toUpperCase()}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Panel({ id, title, icon, titleColor, right, profile, accent, children }: {
+  id?: string; title: string; icon?: React.ReactNode; titleColor?: string; right?: React.ReactNode;
+  profile: Profile; accent: string; green: string; children: React.ReactNode;
+}) {
+  return (
+    <section id={id}
+             className={`rounded-2xl overflow-hidden animate-fade-in-up ${profile.tilt_cards ? "tilt-card" : ""}`}
+             style={{
+               border: `1px solid ${profile.border_glow ? `${accent}44` : `${accent}22`}`,
+               background: `oklch(0.14 0.02 280 / ${clamp(profile.card_opacity)})`,
+               backdropFilter: `blur(${profile.card_blur}px)`,
+               WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
+               boxShadow: profile.border_glow ? `0 18px 50px -26px ${accent}66` : undefined,
+             }}>
+      <div className="flex items-center gap-2 px-5 py-4">
+        <span style={{ color: titleColor || accent }}>{icon}</span>
+        <h2 className="font-semibold tracking-tight" style={{ color: titleColor || accent }}>{title}</h2>
+        {right && <span className="ml-auto">{right}</span>}
       </div>
       {children}
-    </div>
+    </section>
   );
 }

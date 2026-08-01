@@ -10,7 +10,7 @@ const Particles: React.FC = () => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    let w: number, h: number;
+    let w = 0, h = 0;
     const particles: Array<{ x: number; y: number; vx: number; vy: number; size: number }> = [];
     const COUNT = 60;
 
@@ -138,7 +138,7 @@ function StatusPage() {
       } catch (e) { results.db = false; }
 
       try {
-        const resp = await fetch(`${supabase.supabaseUrl}/rest/v1/`, { method: 'HEAD', headers: { 'apikey': supabase.supabaseKey } });
+        const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/`, { method: "HEAD", headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string } });
         results.api = resp.ok;
       } catch (e) { results.api = false; }
 
