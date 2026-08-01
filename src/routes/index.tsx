@@ -87,9 +87,12 @@ function Landing() {
               My dashboard
             </Link>
           ) : (
-            <button onClick={signIn} className="rounded-md glass-strong px-4 py-2 text-sm font-medium hover:glow-purple transition-shadow">
-              Sign in
-            </button>
+        <button
+          onClick={() => navigate({ to: "/auth" })}
+          className="rounded-md glass-strong px-4 py-2 text-sm font-medium hover:glow-purple transition-shadow"
+        >
+          Sign in
+        </button>
           )}
         </nav>
       </header>
