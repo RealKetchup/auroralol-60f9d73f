@@ -277,7 +277,7 @@ function ProfilePage() {
               <Stat label="Rating" value={rated.length ? avgRating.toFixed(1) : "—"} icon={<Star className="w-3.5 h-3.5" />} accent={green} />
             </div>
             <div className="sm:ml-auto flex items-center gap-3">
-              {links.slice(0, 5).map(l => {
+              {links.slice(0, 5).map((l: Lnk) => {
                 const kind = detectIcon(l.url);
                 const color = ICON_COLOR[kind];
                 return (
@@ -369,7 +369,7 @@ function ProfilePage() {
             {links.length > 0 && (
               <Panel id="links" profile={profile} accent={accent} green={green} title="Links" icon={<Link2 className="w-4 h-4" />} titleColor={accent}>
                 <div className="px-4 pb-4 grid gap-2">
-                  {links.map(l => {
+                  {links.map((l: Lnk) => {
                     const kind = detectIcon(l.url);
                     const color = ICON_COLOR[kind];
                     return (
