@@ -100,7 +100,7 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 
 // ─── Allowed routes during maintenance ───
 const ALLOWED_ROUTES = ['/status'];
