@@ -11,7 +11,7 @@ const Particles: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let w: number, h: number;
+    let w = 0, h = 0;
     const particles: Array<{ x: number; y: number; vx: number; vy: number; size: number }> = [];
     const COUNT = 80;
 
