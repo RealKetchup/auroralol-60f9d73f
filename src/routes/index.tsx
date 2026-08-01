@@ -120,12 +120,16 @@ function Landing() {
               Open dashboard →
             </Link>
           ) : (
-            <button onClick={signIn} className="group rounded-lg px-7 py-3.5 font-medium relative overflow-hidden animate-pulse-glow"
-                    style={{ background: "var(--grad-aurora)", color: "white" }}>
-              <span className="relative z-10 flex items-center gap-2">
-                <GoogleMark /> Sign in with Google
-              </span>
-            </button>
+        <button
+          onClick={() => navigate({ to: "/auth" })}
+          className="group rounded-lg px-7 py-3.5 font-medium relative overflow-hidden animate-pulse-glow"
+          style={{ background: "var(--grad-aurora)", color: "white" }}
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            <GoogleMark />
+            Sign in with Google
+          </span>
+        </button>
           )}
           <a href="#examples" aria-label="Scroll down to example profiles" className="rounded-lg px-6 py-3.5 font-medium glass hover:glow-magenta transition-shadow">
             See examples ↓
