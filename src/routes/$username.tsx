@@ -242,7 +242,7 @@ function ProfilePage() {
               </Link>
             )}
             <div className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1" style={{ border: `1px solid ${accent}44`, background: "oklch(0.16 0.03 280 / 0.7)" }}>
-              <Avatar url={avatarUrl} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="sm" />
+              <Avatar url={shownAvatar} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="sm" />
               <span className="text-sm truncate max-w-[140px]">{name}</span>
               {isSiteOwner && <Crown className="w-3.5 h-3.5" style={{ color: "oklch(0.85 0.18 80)" }} />}
             </div>
