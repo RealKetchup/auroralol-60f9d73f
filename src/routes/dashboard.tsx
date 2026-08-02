@@ -76,10 +76,15 @@ const BG_OPTIONS = [
   { id: "none", label: "None" },
 ];
 const FONT_OPTIONS = [
-  { id: "space-grotesk", label: "Grotesk" },
-  { id: "mono", label: "Mono" },
-  { id: "serif", label: "Serif" },
-  { id: "system", label: "System" },
+  ...FONT_PRESETS.map(f => ({ id: f.id, label: f.label })),
+  { id: "custom", label: "Custom" },
+];
+const AURORA_OPTIONS = [
+  { id: "aurora", label: "Aurora" },
+  { id: "ribbons", label: "Ribbons" },
+  { id: "beams", label: "Beams" },
+  { id: "glow", label: "Glow" },
+  { id: "none", label: "Off" },
 ];
 const LAYOUT_OPTIONS = [
   { id: "classic", label: "Classic" },
