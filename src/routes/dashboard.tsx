@@ -241,6 +241,25 @@ function Dashboard() {
     toast.success("Background uploaded — hit save");
   };
 
+  const uploadVideo = async (file: File, kind: "panel" | "background") => {
+    if (!profile) return;
+    if (file.size > 25 * 1024 * 1024) return toast.error("Max 25MB");
+    const ext = file.name.split(".").pop() || "mp4";
+    const path = `${profile.id}/${kind}-video.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return toast.error(error.message);
+    patch(kind === "panel" ? { panel_video_url: path } : { background_video_url: path });
+    toast.success("Video uploaded — hit save");
+  };
+
+  const syncRobloxAvatar = async () => {
+    if (!profile?.roblox_url) return toast.error("Add your Roblox profile URL first");
+    const res = await getRobloxAvatar({ data: { url: profile.roblox_url } });
+    if (!res.ok) return toast.error(res.error);
+    patch({ roblox_avatar_url: res.imageUrl, auto_roblox_avatar: true });
+    toast.success("Roblox avatar linked — hit save");
+  };
+
   const uploadMusic = async (file: File) => {
     if (!profile) return;
     if (file.size > 10 * 1024 * 1024) return toast.error("Max 10MB");
