@@ -4,11 +4,12 @@ import { Crown, Pencil, Link2, Calendar, Star, Users, MessageSquare, BookOpen, U
 import { supabase } from "@/integrations/supabase/client";
 import { resolveStorageUrl } from "@/lib/storage";
 import { MusicPlayer } from "@/components/profile/MusicPlayer";
-import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, ImageBg } from "@/components/profile/BackgroundFx";
+import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, ImageBg, VideoBg, AuroraVeil } from "@/components/profile/BackgroundFx";
 import { ClickEffect, CustomCursor, CursorTrail } from "@/components/profile/Effects";
 import { LanyardCard } from "@/components/profile/LanyardCard";
 import { Guestbook } from "@/components/profile/Guestbook";
 import { detectIcon, IconFor, ICON_COLOR } from "@/lib/link-icons";
+import { fontStackFor, useRemoteFont } from "@/lib/fonts";
 
 type Profile = {
   id: string;
