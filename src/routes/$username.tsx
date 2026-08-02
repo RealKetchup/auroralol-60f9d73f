@@ -267,7 +267,7 @@ function ProfilePage() {
                               radial-gradient(ellipse 70% 90% at 95% 80%, ${green}44, transparent 65%)`,
                }} />
           <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <Avatar url={avatarUrl} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="lg" />
+            <Avatar url={shownAvatar} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="lg" />
             <div className="min-w-0 flex-1 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2">
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight truncate">{name}</h1>
