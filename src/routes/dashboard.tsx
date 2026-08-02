@@ -511,6 +511,16 @@ function Dashboard() {
           <Section title="Layout & type">
             <Field label="Font">
               <Pills options={FONT_OPTIONS} value={profile.font_family} onChange={v => patch({ font_family: v })} />
+              {profile.font_family === "custom" && (
+                <div className="mt-2 space-y-2">
+                  <input value={profile.custom_font_name ?? ""} onChange={e => patch({ custom_font_name: e.target.value })}
+                         placeholder="Font family name (e.g. Fredoka)"
+                         className="w-full bg-input rounded-md px-3 py-2 text-xs border border-border" />
+                  <input value={profile.custom_font_url ?? ""} onChange={e => patch({ custom_font_url: e.target.value })}
+                         placeholder="https://fonts.googleapis.com/css2?family=..."
+                         className="w-full bg-input rounded-md px-3 py-2 text-xs border border-border font-mono" />
+                </div>
+              )}
             </Field>
             <Field label="Layout">
               <Pills options={LAYOUT_OPTIONS} value={profile.layout_style} onChange={v => patch({ layout_style: v })} />
