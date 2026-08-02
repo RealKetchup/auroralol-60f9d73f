@@ -543,6 +543,13 @@ function Dashboard() {
           </Section>
 
           <Section title="Background">
+            <Field label="Animated aurora (follows your theme colors)">
+              <Pills options={AURORA_OPTIONS} value={profile.aurora_preset ?? "aurora"} onChange={v => patch({ aurora_preset: v })} />
+            </Field>
+            {profile.aurora_preset !== "none" && (
+              <Slider label={`Aurora intensity · ${(profile.aurora_intensity ?? 0.6).toFixed(2)}`} min={0.1} max={1} step={0.05}
+                      value={profile.aurora_intensity ?? 0.6} onChange={v => patch({ aurora_intensity: v })} />
+            )}
             <Field label="Effect">
               <Pills options={BG_OPTIONS} value={profile.background_effect} onChange={v => patch({ background_effect: v })} />
             </Field>
