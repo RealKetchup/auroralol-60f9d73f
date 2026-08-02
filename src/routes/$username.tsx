@@ -143,14 +143,20 @@ function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [musicUrl, setMusicUrl] = useState<string | null>(null);
   const [bgImageUrl, setBgImageUrl] = useState<string | null>(null);
+  const [bgVideoUrl, setBgVideoUrl] = useState<string | null>(null);
+  const [panelVideoUrl, setPanelVideoUrl] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [tab, setTab] = useState<"profile" | "guestbook" | "reviews" | "links">("profile");
+
+  useRemoteFont(profile.custom_font_url);
 
   useEffect(() => {
     resolveStorageUrl("avatars", profile.avatar_url).then(setAvatarUrl);
     resolveStorageUrl("music", profile.music_url).then(setMusicUrl);
     resolveStorageUrl("avatars", profile.background_image_url).then(setBgImageUrl);
+    resolveStorageUrl("avatars", profile.background_video_url).then(setBgVideoUrl);
+    resolveStorageUrl("avatars", profile.panel_video_url).then(setPanelVideoUrl);
     supabase.auth.getUser().then(({ data }) => setIsOwner(data.user?.id === profile.id));
     supabase
       .from("reviews")
@@ -159,13 +165,17 @@ function ProfilePage() {
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data }) => setReviews((data || []) as Review[]));
-  }, [profile.id, profile.avatar_url, profile.music_url, profile.background_image_url]);
+  }, [profile.id, profile.avatar_url, profile.music_url, profile.background_image_url, profile.background_video_url, profile.panel_video_url]);
 
   const accent = profile.accent_color;
   const green = profile.secondary_color;
-  const speedStyle = { ["--anim-speed" as never]: profile.animation_speed } as React.CSSProperties;
+  const speedStyle = {
+    ["--anim-speed" as never]: profile.animation_speed,
+    fontFamily: fontStackFor(profile.font_family, profile.custom_font_name),
+  } as React.CSSProperties;
   const isSiteOwner = profile.username.toLowerCase() === "owner";
   const name = profile.display_name || profile.username;
+  const shownAvatar = (profile.auto_roblox_avatar && profile.roblox_avatar_url) || avatarUrl;
 
   const rated = reviews.filter(r => typeof r.rating === "number");
   const avgRating = rated.length
@@ -175,7 +185,11 @@ function ProfilePage() {
 
   return (
     <div className="min-h-screen relative text-[14px] sm:text-[15px]" style={speedStyle}>
-      {bgImageUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
+      {bgVideoUrl && <VideoBg url={bgVideoUrl} opacity={profile.video_opacity} />}
+      {bgImageUrl && !bgVideoUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
+      {profile.aurora_preset !== "none" && (
+        <AuroraVeil accent={accent} secondary={green} intensity={profile.aurora_intensity} preset={profile.aurora_preset} />
+      )}
       {profile.background_effect === "particles" && <Particles color={accent} />}
       {profile.background_effect === "aurora" && <AuroraBg accent={accent} secondary={green} />}
       {profile.background_effect === "stars" && <Stars />}
