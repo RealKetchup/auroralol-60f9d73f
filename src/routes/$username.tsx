@@ -40,6 +40,15 @@ type Profile = {
   avatar_shape: string;
   animation_speed: number;
   profile_style: string;
+  panel_video_url: string | null;
+  background_video_url: string | null;
+  video_opacity: number;
+  custom_font_url: string | null;
+  custom_font_name: string | null;
+  auto_roblox_avatar: boolean;
+  roblox_avatar_url: string | null;
+  aurora_preset: string;
+  aurora_intensity: number;
   view_count: number;
   created_at: string;
 };
