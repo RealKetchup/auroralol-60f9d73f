@@ -199,3 +199,39 @@
 
 .tilt-card { transition: transform 0.25s ease-out; transform-style: preserve-3d; }
 .tilt-card:hover { transform: perspective(800px) rotateX(2deg) rotateY(-3deg) translateY(-2px); }
+
+/* Extra font presets (families loaded via <link> in the root route head) */
+.font-preset-orbitron { font-family: "Orbitron", ui-sans-serif, sans-serif; }
+.font-preset-poppins { font-family: "Poppins", ui-sans-serif, sans-serif; }
+.font-preset-sora { font-family: "Sora", ui-sans-serif, sans-serif; }
+.font-preset-rubik { font-family: "Rubik", ui-sans-serif, sans-serif; }
+.font-preset-playfair { font-family: "Playfair Display", Georgia, serif; }
+.font-preset-bebas { font-family: "Bebas Neue", Impact, sans-serif; }
+.font-preset-vibes { font-family: "Great Vibes", cursive; }
+.font-preset-pixel { font-family: "Press Start 2P", ui-monospace, monospace; }
+
+/* Animated aurora veil */
+@keyframes aurora-veil {
+  0%   { background-position: 0% 50%; transform: rotate(0deg) scale(1); }
+  50%  { background-position: 100% 50%; transform: rotate(1.5deg) scale(1.06); }
+  100% { background-position: 0% 50%; transform: rotate(0deg) scale(1); }
+}
+.animate-aurora-veil { animation: aurora-veil calc(18s / var(--anim-speed, 1)) ease-in-out infinite; }
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee-x 28s linear infinite; }
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.animate-float { animation: float-y 5s ease-in-out infinite; }
+
+@utility border-aurora {
+  border: 1px solid transparent;
+  background-image: var(--grad-aurora);
+  background-origin: border-box;
+}
