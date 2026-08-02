@@ -56,11 +56,15 @@ export type Database = {
         Row: {
           accent_color: string | null
           animation_speed: number
+          aurora_intensity: number
+          aurora_preset: string
+          auto_roblox_avatar: boolean
           avatar_shape: string
           avatar_url: string | null
           background_effect: string | null
           background_image_url: string | null
           background_opacity: number
+          background_video_url: string | null
           bio: string | null
           border_glow: boolean
           card_blur: number
@@ -70,6 +74,8 @@ export type Database = {
           created_at: string
           cursor_trail: boolean
           custom_cursor: boolean | null
+          custom_font_name: string | null
+          custom_font_url: string | null
           discord_id: string | null
           display_name: string | null
           entry_animation: string
@@ -78,22 +84,29 @@ export type Database = {
           layout_style: string
           music_title: string | null
           music_url: string | null
+          panel_video_url: string | null
           profile_style: string
+          roblox_avatar_url: string | null
           roblox_url: string | null
           secondary_color: string | null
           tilt_cards: boolean
           updated_at: string
           username: string
+          video_opacity: number
           view_count: number
         }
         Insert: {
           accent_color?: string | null
           animation_speed?: number
+          aurora_intensity?: number
+          aurora_preset?: string
+          auto_roblox_avatar?: boolean
           avatar_shape?: string
           avatar_url?: string | null
           background_effect?: string | null
           background_image_url?: string | null
           background_opacity?: number
+          background_video_url?: string | null
           bio?: string | null
           border_glow?: boolean
           card_blur?: number
@@ -103,6 +116,8 @@ export type Database = {
           created_at?: string
           cursor_trail?: boolean
           custom_cursor?: boolean | null
+          custom_font_name?: string | null
+          custom_font_url?: string | null
           discord_id?: string | null
           display_name?: string | null
           entry_animation?: string
@@ -111,22 +126,29 @@ export type Database = {
           layout_style?: string
           music_title?: string | null
           music_url?: string | null
+          panel_video_url?: string | null
           profile_style?: string
+          roblox_avatar_url?: string | null
           roblox_url?: string | null
           secondary_color?: string | null
           tilt_cards?: boolean
           updated_at?: string
           username: string
+          video_opacity?: number
           view_count?: number
         }
         Update: {
           accent_color?: string | null
           animation_speed?: number
+          aurora_intensity?: number
+          aurora_preset?: string
+          auto_roblox_avatar?: boolean
           avatar_shape?: string
           avatar_url?: string | null
           background_effect?: string | null
           background_image_url?: string | null
           background_opacity?: number
+          background_video_url?: string | null
           bio?: string | null
           border_glow?: boolean
           card_blur?: number
@@ -136,6 +158,8 @@ export type Database = {
           created_at?: string
           cursor_trail?: boolean
           custom_cursor?: boolean | null
+          custom_font_name?: string | null
+          custom_font_url?: string | null
           discord_id?: string | null
           display_name?: string | null
           entry_animation?: string
@@ -144,12 +168,15 @@ export type Database = {
           layout_style?: string
           music_title?: string | null
           music_url?: string | null
+          panel_video_url?: string | null
           profile_style?: string
+          roblox_avatar_url?: string | null
           roblox_url?: string | null
           secondary_color?: string | null
           tilt_cards?: boolean
           updated_at?: string
           username?: string
+          video_opacity?: number
           view_count?: number
         }
         Relationships: []
