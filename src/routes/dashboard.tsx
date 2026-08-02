@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { resolveStorageUrl } from "@/lib/storage";
 import { ensureUserProfile } from "@/lib/auth-flow";
+import { FONT_PRESETS } from "@/lib/fonts";
+import { getRobloxAvatar } from "@/lib/roblox.functions";
 import { Plus, Trash2, LogOut, ExternalLink, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
