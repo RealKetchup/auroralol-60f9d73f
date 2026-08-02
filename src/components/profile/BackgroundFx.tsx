@@ -136,3 +136,52 @@ export function ImageBg({ url, opacity }: { url: string; opacity: number }) {
     }} />
   );
 }
+
+/** Fullscreen looping background video (file URL or direct mp4/webm link). */
+export function VideoBg({ url, opacity }: { url: string; opacity: number }) {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <video
+        src={url}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="w-full h-full object-cover"
+        style={{ opacity }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Animated aurora veil that always tints the page with the active theme colors.
+ * Intensity 0 → invisible, 1 → very saturated.
+ */
+export function AuroraVeil({
+  accent,
+  secondary,
+  intensity = 0.6,
+  preset = "aurora",
+}: { accent: string; secondary: string; intensity?: number; preset?: string }) {
+  const a = Math.max(0, Math.min(1, intensity));
+  const layers: Record<string, string> = {
+    aurora: `radial-gradient(ellipse 70% 45% at 15% 0%, ${accent}, transparent 62%),
+             radial-gradient(ellipse 60% 55% at 88% 12%, ${secondary}, transparent 64%),
+             radial-gradient(ellipse 80% 45% at 50% 105%, ${accent}, transparent 64%)`,
+    ribbons: `conic-gradient(from 180deg at 30% 20%, ${accent}, transparent 35%),
+              conic-gradient(from 20deg at 80% 70%, ${secondary}, transparent 40%)`,
+    beams: `linear-gradient(115deg, transparent 20%, ${accent} 38%, transparent 46%),
+            linear-gradient(65deg, transparent 45%, ${secondary} 62%, transparent 70%)`,
+    glow: `radial-gradient(circle at 50% 50%, ${accent}, transparent 55%),
+           radial-gradient(circle at 20% 80%, ${secondary}, transparent 55%)`,
+  };
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div
+        className="absolute -inset-24 animate-aurora-veil blur-3xl"
+        style={{ background: layers[preset] ?? layers.aurora, opacity: a * 0.85, backgroundSize: "220% 220%" }}
+      />
+    </div>
+  );
+}

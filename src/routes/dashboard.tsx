@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { resolveStorageUrl } from "@/lib/storage";
 import { ensureUserProfile } from "@/lib/auth-flow";
+import { FONT_PRESETS } from "@/lib/fonts";
+import { getRobloxAvatar } from "@/lib/roblox.functions";
 import { Plus, Trash2, LogOut, ExternalLink, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -51,6 +53,15 @@ type Profile = {
   avatar_shape: string;
   animation_speed: number;
   profile_style: string;
+  panel_video_url: string | null;
+  background_video_url: string | null;
+  video_opacity: number;
+  custom_font_url: string | null;
+  custom_font_name: string | null;
+  auto_roblox_avatar: boolean;
+  roblox_avatar_url: string | null;
+  aurora_preset: string;
+  aurora_intensity: number;
 };
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
 
@@ -65,10 +76,15 @@ const BG_OPTIONS = [
   { id: "none", label: "None" },
 ];
 const FONT_OPTIONS = [
-  { id: "space-grotesk", label: "Grotesk" },
-  { id: "mono", label: "Mono" },
-  { id: "serif", label: "Serif" },
-  { id: "system", label: "System" },
+  ...FONT_PRESETS.map(f => ({ id: f.id, label: f.label })),
+  { id: "custom", label: "Custom" },
+];
+const AURORA_OPTIONS = [
+  { id: "aurora", label: "Aurora" },
+  { id: "ribbons", label: "Ribbons" },
+  { id: "beams", label: "Beams" },
+  { id: "glow", label: "Glow" },
+  { id: "none", label: "Off" },
 ];
 const LAYOUT_OPTIONS = [
   { id: "classic", label: "Classic" },
@@ -182,6 +198,15 @@ function Dashboard() {
       avatar_shape: profile.avatar_shape,
       animation_speed: profile.animation_speed,
       profile_style: profile.profile_style,
+      panel_video_url: profile.panel_video_url,
+      background_video_url: profile.background_video_url,
+      video_opacity: profile.video_opacity,
+      custom_font_url: profile.custom_font_url,
+      custom_font_name: profile.custom_font_name,
+      auto_roblox_avatar: profile.auto_roblox_avatar,
+      roblox_avatar_url: profile.roblox_avatar_url,
+      aurora_preset: profile.aurora_preset,
+      aurora_intensity: profile.aurora_intensity,
     }).eq("id", profile.id);
     setSaving(false);
     if (error) {
@@ -214,6 +239,25 @@ function Dashboard() {
     if (error) return toast.error(error.message);
     patch({ background_image_url: path });
     toast.success("Background uploaded — hit save");
+  };
+
+  const uploadVideo = async (file: File, kind: "panel" | "background") => {
+    if (!profile) return;
+    if (file.size > 25 * 1024 * 1024) return toast.error("Max 25MB");
+    const ext = file.name.split(".").pop() || "mp4";
+    const path = `${profile.id}/${kind}-video.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return toast.error(error.message);
+    patch(kind === "panel" ? { panel_video_url: path } : { background_video_url: path });
+    toast.success("Video uploaded — hit save");
+  };
+
+  const syncRobloxAvatar = async () => {
+    if (!profile?.roblox_url) return toast.error("Add your Roblox profile URL first");
+    const res = await getRobloxAvatar({ data: { url: profile.roblox_url } });
+    if (!res.ok) return toast.error(res.error);
+    patch({ roblox_avatar_url: res.imageUrl, auto_roblox_avatar: true });
+    toast.success("Roblox avatar linked — hit save");
   };
 
   const uploadMusic = async (file: File) => {
@@ -285,6 +329,7 @@ function Dashboard() {
                   <button key={t.id} onClick={() => patch({
                     accent_color: t.accent, secondary_color: t.secondary,
                     background_effect: t.bg, font_family: t.font, click_effect_style: t.click,
+                    aurora_preset: profile.aurora_preset === "none" ? "aurora" : (profile.aurora_preset || "aurora"),
                   })}
                     className={`relative rounded-lg p-3 text-left border transition-all hover:-translate-y-0.5 ${active ? "border-primary glow-purple" : "border-border"}`}
                     style={{ background: `linear-gradient(135deg, ${t.accent}22, ${t.secondary}22)` }}>
@@ -354,7 +399,49 @@ function Dashboard() {
                      placeholder="https://roblox.com/users/123/profile"
                      className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border" />
             </Field>
+            <div className="flex items-center gap-3">
+              <button onClick={syncRobloxAvatar}
+                      className="glass-strong rounded-md px-3 py-2 text-sm hover:glow-purple transition-shadow">
+                Use my Roblox avatar
+              </button>
+              {profile.roblox_avatar_url && (
+                <img src={profile.roblox_avatar_url} alt="Roblox avatar" className="w-10 h-10 rounded-md object-cover border border-border" />
+              )}
+            </div>
+            <Toggle label="Show Roblox avatar as my picture" checked={profile.auto_roblox_avatar}
+                    onChange={v => patch({ auto_roblox_avatar: v })} />
           </Section>
+
+          {/* Video */}
+          <Section title="Video">
+            <Field label="Panel video URL (plays in your name card)">
+              <input value={profile.panel_video_url ?? ""} onChange={e => patch({ panel_video_url: e.target.value })}
+                     placeholder="https://....mp4 or upload below"
+                     className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border font-mono text-xs" />
+            </Field>
+            <label className="inline-flex items-center gap-2 glass-strong rounded-md px-3 py-2 text-sm cursor-pointer hover:glow-purple transition-shadow">
+              <Upload className="w-4 h-4" /> Upload panel video
+              <input type="file" accept="video/*" className="hidden"
+                     onChange={e => e.target.files?.[0] && uploadVideo(e.target.files[0], "panel")} />
+            </label>
+            <Field label="Background video URL (fills the whole page)">
+              <input value={profile.background_video_url ?? ""} onChange={e => patch({ background_video_url: e.target.value })}
+                     placeholder="https://....mp4 or upload below"
+                     className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border font-mono text-xs" />
+            </Field>
+            <label className="inline-flex items-center gap-2 glass-strong rounded-md px-3 py-2 text-sm cursor-pointer hover:glow-purple transition-shadow">
+              <Upload className="w-4 h-4" /> Upload background video
+              <input type="file" accept="video/*" className="hidden"
+                     onChange={e => e.target.files?.[0] && uploadVideo(e.target.files[0], "background")} />
+            </label>
+            <Slider label={`Background video opacity · ${(profile.video_opacity ?? 0.5).toFixed(2)}`} min={0.05} max={1} step={0.05}
+                    value={profile.video_opacity ?? 0.5} onChange={v => patch({ video_opacity: v })} />
+            {(profile.panel_video_url || profile.background_video_url) && (
+              <button onClick={() => patch({ panel_video_url: null, background_video_url: null })}
+                      className="text-xs text-destructive hover:underline">Remove videos</button>
+            )}
+          </Section>
+
 
           {/* Music */}
           <Section title="Music">
@@ -425,6 +512,16 @@ function Dashboard() {
           <Section title="Layout & type">
             <Field label="Font">
               <Pills options={FONT_OPTIONS} value={profile.font_family} onChange={v => patch({ font_family: v })} />
+              {profile.font_family === "custom" && (
+                <div className="mt-2 space-y-2">
+                  <input value={profile.custom_font_name ?? ""} onChange={e => patch({ custom_font_name: e.target.value })}
+                         placeholder="Font family name (e.g. Fredoka)"
+                         className="w-full bg-input rounded-md px-3 py-2 text-xs border border-border" />
+                  <input value={profile.custom_font_url ?? ""} onChange={e => patch({ custom_font_url: e.target.value })}
+                         placeholder="https://fonts.googleapis.com/css2?family=..."
+                         className="w-full bg-input rounded-md px-3 py-2 text-xs border border-border font-mono" />
+                </div>
+              )}
             </Field>
             <Field label="Layout">
               <Pills options={LAYOUT_OPTIONS} value={profile.layout_style} onChange={v => patch({ layout_style: v })} />
@@ -447,6 +544,13 @@ function Dashboard() {
           </Section>
 
           <Section title="Background">
+            <Field label="Animated aurora (follows your theme colors)">
+              <Pills options={AURORA_OPTIONS} value={profile.aurora_preset ?? "aurora"} onChange={v => patch({ aurora_preset: v })} />
+            </Field>
+            {profile.aurora_preset !== "none" && (
+              <Slider label={`Aurora intensity · ${(profile.aurora_intensity ?? 0.6).toFixed(2)}`} min={0.1} max={1} step={0.05}
+                      value={profile.aurora_intensity ?? 0.6} onChange={v => patch({ aurora_intensity: v })} />
+            )}
             <Field label="Effect">
               <Pills options={BG_OPTIONS} value={profile.background_effect} onChange={v => patch({ background_effect: v })} />
             </Field>

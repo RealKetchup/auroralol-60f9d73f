@@ -1,14 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Crown, Pencil, Link2, Calendar, Star, Users, MessageSquare, BookOpen, User as UserIcon, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveStorageUrl } from "@/lib/storage";
 import { MusicPlayer } from "@/components/profile/MusicPlayer";
-import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, ImageBg } from "@/components/profile/BackgroundFx";
+import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, ImageBg, VideoBg, AuroraVeil } from "@/components/profile/BackgroundFx";
 import { ClickEffect, CustomCursor, CursorTrail } from "@/components/profile/Effects";
 import { LanyardCard } from "@/components/profile/LanyardCard";
 import { Guestbook } from "@/components/profile/Guestbook";
 import { detectIcon, IconFor, ICON_COLOR } from "@/lib/link-icons";
+import { fontStackFor, useRemoteFont } from "@/lib/fonts";
 
 type Profile = {
   id: string;
@@ -39,6 +40,15 @@ type Profile = {
   avatar_shape: string;
   animation_speed: number;
   profile_style: string;
+  panel_video_url: string | null;
+  background_video_url: string | null;
+  video_opacity: number;
+  custom_font_url: string | null;
+  custom_font_name: string | null;
+  auto_roblox_avatar: boolean;
+  roblox_avatar_url: string | null;
+  aurora_preset: string;
+  aurora_intensity: number;
   view_count: number;
   created_at: string;
 };
@@ -133,14 +143,20 @@ function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [musicUrl, setMusicUrl] = useState<string | null>(null);
   const [bgImageUrl, setBgImageUrl] = useState<string | null>(null);
+  const [bgVideoUrl, setBgVideoUrl] = useState<string | null>(null);
+  const [panelVideoUrl, setPanelVideoUrl] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [tab, setTab] = useState<"profile" | "guestbook" | "reviews" | "links">("profile");
+
+  useRemoteFont(profile.custom_font_url);
 
   useEffect(() => {
     resolveStorageUrl("avatars", profile.avatar_url).then(setAvatarUrl);
     resolveStorageUrl("music", profile.music_url).then(setMusicUrl);
     resolveStorageUrl("avatars", profile.background_image_url).then(setBgImageUrl);
+    resolveStorageUrl("avatars", profile.background_video_url).then(setBgVideoUrl);
+    resolveStorageUrl("avatars", profile.panel_video_url).then(setPanelVideoUrl);
     supabase.auth.getUser().then(({ data }) => setIsOwner(data.user?.id === profile.id));
     supabase
       .from("reviews")
@@ -149,13 +165,17 @@ function ProfilePage() {
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data }) => setReviews((data || []) as Review[]));
-  }, [profile.id, profile.avatar_url, profile.music_url, profile.background_image_url]);
+  }, [profile.id, profile.avatar_url, profile.music_url, profile.background_image_url, profile.background_video_url, profile.panel_video_url]);
 
   const accent = profile.accent_color;
   const green = profile.secondary_color;
-  const speedStyle = { ["--anim-speed" as never]: profile.animation_speed } as React.CSSProperties;
+  const speedStyle = {
+    ["--anim-speed" as never]: profile.animation_speed,
+    fontFamily: fontStackFor(profile.font_family, profile.custom_font_name),
+  } as React.CSSProperties;
   const isSiteOwner = profile.username.toLowerCase() === "owner";
   const name = profile.display_name || profile.username;
+  const shownAvatar = (profile.auto_roblox_avatar && profile.roblox_avatar_url) || avatarUrl;
 
   const rated = reviews.filter(r => typeof r.rating === "number");
   const avgRating = rated.length
@@ -165,7 +185,11 @@ function ProfilePage() {
 
   return (
     <div className="min-h-screen relative text-[14px] sm:text-[15px]" style={speedStyle}>
-      {bgImageUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
+      {bgVideoUrl && <VideoBg url={bgVideoUrl} opacity={profile.video_opacity} />}
+      {bgImageUrl && !bgVideoUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
+      {profile.aurora_preset !== "none" && (
+        <AuroraVeil accent={accent} secondary={green} intensity={profile.aurora_intensity} preset={profile.aurora_preset} />
+      )}
       {profile.background_effect === "particles" && <Particles color={accent} />}
       {profile.background_effect === "aurora" && <AuroraBg accent={accent} secondary={green} />}
       {profile.background_effect === "stars" && <Stars />}
@@ -218,7 +242,7 @@ function ProfilePage() {
               </Link>
             )}
             <div className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1" style={{ border: `1px solid ${accent}44`, background: "oklch(0.16 0.03 280 / 0.7)" }}>
-              <Avatar url={avatarUrl} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="sm" />
+              <Avatar url={shownAvatar} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="sm" />
               <span className="text-sm truncate max-w-[140px]">{name}</span>
               {isSiteOwner && <Crown className="w-3.5 h-3.5" style={{ color: "oklch(0.85 0.18 80)" }} />}
             </div>
@@ -243,7 +267,7 @@ function ProfilePage() {
                               radial-gradient(ellipse 70% 90% at 95% 80%, ${green}44, transparent 65%)`,
                }} />
           <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <Avatar url={avatarUrl} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="lg" />
+            <Avatar url={shownAvatar} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="lg" />
             <div className="min-w-0 flex-1 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2">
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight truncate">{name}</h1>
@@ -260,6 +284,9 @@ function ProfilePage() {
               </div>
               {profile.bio && <p className="mt-4 text-sm sm:text-base opacity-90 whitespace-pre-wrap">{profile.bio}</p>}
             </div>
+            {panelVideoUrl && (
+              <PanelVideo url={panelVideoUrl} accent={accent} glow={profile.border_glow} />
+            )}
             <span className="absolute top-5 right-5 flex items-center gap-2 rounded-full px-3 py-1 text-xs"
                   style={{ background: "oklch(0.16 0.03 280 / 0.8)", border: `1px solid ${green}55` }}>
               <span className="w-2 h-2 rounded-full" style={{ background: green, boxShadow: `0 0 8px ${green}` }} /> Online
@@ -455,5 +482,46 @@ function Panel({ id, title, icon, titleColor, right, profile, accent, children }
       </div>
       {children}
     </section>
+  );
+}
+
+function PanelVideo({ url, accent, glow }: { url: string; accent: string; glow: boolean }) {
+  const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(true);
+  const ref = useRef<HTMLVideoElement>(null);
+
+  const toggle = () => {
+    const v = ref.current;
+    if (!v) return;
+    if (v.paused) { v.play(); setPlaying(true); } else { v.pause(); setPlaying(false); }
+  };
+
+  return (
+    <div className="w-full sm:w-64 shrink-0 rounded-xl overflow-hidden relative group"
+         style={{
+           border: `1px solid ${accent}66`,
+           boxShadow: glow ? `0 14px 40px -18px ${accent}` : undefined,
+         }}>
+      <video
+        ref={ref}
+        src={url}
+        autoPlay
+        muted={muted}
+        loop
+        playsInline
+        className="w-full aspect-video object-cover bg-black/40"
+      />
+      <div className="absolute bottom-0 inset-x-0 flex items-center gap-2 px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+           style={{ background: "oklch(0.1 0.02 280 / 0.7)" }}>
+        <button onClick={toggle} aria-label={playing ? "Pause video" : "Play video"}
+                className="rounded-md px-2 py-1 text-xs" style={{ border: `1px solid ${accent}55`, color: accent }}>
+          {playing ? "❚❚" : "▶"}
+        </button>
+        <button onClick={() => setMuted(m => !m)} aria-label={muted ? "Unmute video" : "Mute video"}
+                className="rounded-md px-2 py-1 text-xs" style={{ border: `1px solid ${accent}55`, color: accent }}>
+          {muted ? "🔇" : "🔊"}
+        </button>
+      </div>
+    </div>
   );
 }
