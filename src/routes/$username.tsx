@@ -284,6 +284,9 @@ function ProfilePage() {
               </div>
               {profile.bio && <p className="mt-4 text-sm sm:text-base opacity-90 whitespace-pre-wrap">{profile.bio}</p>}
             </div>
+            {panelVideoUrl && (
+              <PanelVideo url={panelVideoUrl} accent={accent} glow={profile.border_glow} />
+            )}
             <span className="absolute top-5 right-5 flex items-center gap-2 rounded-full px-3 py-1 text-xs"
                   style={{ background: "oklch(0.16 0.03 280 / 0.8)", border: `1px solid ${green}55` }}>
               <span className="w-2 h-2 rounded-full" style={{ background: green, boxShadow: `0 0 8px ${green}` }} /> Online
