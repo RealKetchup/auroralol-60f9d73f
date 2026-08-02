@@ -78,6 +78,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       // Inline favicon – prevents 404 for /favicon.ico
       { rel: "icon", href: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Poppins:wght@400;600;800&family=Sora:wght@400..800&family=Rubik:wght@400..800&family=Playfair+Display:wght@400..800&family=Bebas+Neue&family=Great+Vibes&family=Press+Start+2P&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
