@@ -198,6 +198,15 @@ function Dashboard() {
       avatar_shape: profile.avatar_shape,
       animation_speed: profile.animation_speed,
       profile_style: profile.profile_style,
+      panel_video_url: profile.panel_video_url,
+      background_video_url: profile.background_video_url,
+      video_opacity: profile.video_opacity,
+      custom_font_url: profile.custom_font_url,
+      custom_font_name: profile.custom_font_name,
+      auto_roblox_avatar: profile.auto_roblox_avatar,
+      roblox_avatar_url: profile.roblox_avatar_url,
+      aurora_preset: profile.aurora_preset,
+      aurora_intensity: profile.aurora_intensity,
     }).eq("id", profile.id);
     setSaving(false);
     if (error) {
