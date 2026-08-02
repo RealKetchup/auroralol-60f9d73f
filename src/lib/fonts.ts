@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 export type FontPreset = { id: string; label: string; stack: string };
 
 export const FONT_PRESETS: FontPreset[] = [
@@ -25,12 +27,13 @@ export function fontStackFor(fontFamily: string, customFontName?: string | null)
 
 /** Injects a remote stylesheet (e.g. a Google Fonts URL) once, client-side. */
 export function useRemoteFont(url?: string | null) {
-  if (typeof document === "undefined" || !url) return;
-  if (!/^https:\/\//.test(url)) return;
-  if (document.querySelector(`link[data-aurora-font="${url}"]`)) return;
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = url;
-  link.dataset.auroraFont = url;
-  document.head.appendChild(link);
+  useEffect(() => {
+    if (!url || !/^https:\/\//.test(url)) return;
+    if (document.querySelector(`link[data-aurora-font="${url}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = url;
+    link.dataset.auroraFont = url;
+    document.head.appendChild(link);
+  }, [url]);
 }

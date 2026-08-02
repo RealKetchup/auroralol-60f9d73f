@@ -329,6 +329,7 @@ function Dashboard() {
                   <button key={t.id} onClick={() => patch({
                     accent_color: t.accent, secondary_color: t.secondary,
                     background_effect: t.bg, font_family: t.font, click_effect_style: t.click,
+                    aurora_preset: profile.aurora_preset === "none" ? "aurora" : (profile.aurora_preset || "aurora"),
                   })}
                     className={`relative rounded-lg p-3 text-left border transition-all hover:-translate-y-0.5 ${active ? "border-primary glow-purple" : "border-border"}`}
                     style={{ background: `linear-gradient(135deg, ${t.accent}22, ${t.secondary}22)` }}>
