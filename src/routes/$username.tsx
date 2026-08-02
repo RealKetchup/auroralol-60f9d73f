@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Crown, Pencil, Link2, Calendar, Star, Users, MessageSquare, BookOpen, User as UserIcon, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveStorageUrl } from "@/lib/storage";
