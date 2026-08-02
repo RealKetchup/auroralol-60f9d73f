@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureUserProfile, rememberAuthNext } from "@/lib/auth-flow";
-import { Music, Sparkles, MessageCircle, Gamepad2, Link as LinkIcon, Wand2 } from "lucide-react";
+import { Music, Sparkles, MessageCircle, Gamepad2, Link as LinkIcon, Wand2, Video, Type, Palette } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
