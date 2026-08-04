@@ -7,6 +7,7 @@ import { ensureUserProfile } from "@/lib/auth-flow";
 import { FONT_PRESETS } from "@/lib/fonts";
 import { getRobloxAvatar } from "@/lib/roblox.functions";
 import { Plus, Trash2, LogOut, ExternalLink, Upload } from "lucide-react";
+import { badgeIcon, tierRing, TIER_LABEL, type Badge } from "@/lib/badges";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -53,9 +54,8 @@ type Profile = {
   avatar_shape: string;
   animation_speed: number;
   profile_style: string;
-  panel_video_url: string | null;
-  background_video_url: string | null;
-  video_opacity: number;
+  panel_background_url: string | null;
+  panel_background_opacity: number;
   custom_font_url: string | null;
   custom_font_name: string | null;
   auto_roblox_avatar: boolean;
@@ -198,9 +198,8 @@ function Dashboard() {
       avatar_shape: profile.avatar_shape,
       animation_speed: profile.animation_speed,
       profile_style: profile.profile_style,
-      panel_video_url: profile.panel_video_url,
-      background_video_url: profile.background_video_url,
-      video_opacity: profile.video_opacity,
+      panel_background_url: profile.panel_background_url,
+      panel_background_opacity: profile.panel_background_opacity,
       custom_font_url: profile.custom_font_url,
       custom_font_name: profile.custom_font_name,
       auto_roblox_avatar: profile.auto_roblox_avatar,
@@ -241,15 +240,15 @@ function Dashboard() {
     toast.success("Background uploaded — hit save");
   };
 
-  const uploadVideo = async (file: File, kind: "panel" | "background") => {
+  const uploadPanelBackground = async (file: File) => {
     if (!profile) return;
-    if (file.size > 25 * 1024 * 1024) return toast.error("Max 25MB");
-    const ext = file.name.split(".").pop() || "mp4";
-    const path = `${profile.id}/${kind}-video.${ext}`;
+    if (file.size > 6 * 1024 * 1024) return toast.error("Max 6MB");
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${profile.id}/panel.${ext}`;
     const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (error) return toast.error(error.message);
-    patch(kind === "panel" ? { panel_video_url: path } : { background_video_url: path });
-    toast.success("Video uploaded — hit save");
+    patch({ panel_background_url: path });
+    toast.success("Panel background uploaded — hit save");
   };
 
   const syncRobloxAvatar = async () => {
@@ -412,36 +411,30 @@ function Dashboard() {
                     onChange={v => patch({ auto_roblox_avatar: v })} />
           </Section>
 
-          {/* Video */}
-          <Section title="Video">
-            <Field label="Panel video URL (plays in your name card)">
-              <input value={profile.panel_video_url ?? ""} onChange={e => patch({ panel_video_url: e.target.value })}
-                     placeholder="https://....mp4 or upload below"
+          {/* Panel background */}
+          <Section title="Panel background">
+            <p className="text-xs text-muted-foreground">
+              The image behind your name panel — the big card at the top of your profile.
+            </p>
+            <Field label="Image URL">
+              <input value={profile.panel_background_url ?? ""} onChange={e => patch({ panel_background_url: e.target.value })}
+                     placeholder="https://... or upload below"
                      className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border font-mono text-xs" />
             </Field>
             <label className="inline-flex items-center gap-2 glass-strong rounded-md px-3 py-2 text-sm cursor-pointer hover:glow-purple transition-shadow">
-              <Upload className="w-4 h-4" /> Upload panel video
-              <input type="file" accept="video/*" className="hidden"
-                     onChange={e => e.target.files?.[0] && uploadVideo(e.target.files[0], "panel")} />
+              <Upload className="w-4 h-4" /> Upload panel image
+              <input type="file" accept="image/*" className="hidden"
+                     onChange={e => e.target.files?.[0] && uploadPanelBackground(e.target.files[0])} />
             </label>
-            <Field label="Background video URL (fills the whole page)">
-              <input value={profile.background_video_url ?? ""} onChange={e => patch({ background_video_url: e.target.value })}
-                     placeholder="https://....mp4 or upload below"
-                     className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border font-mono text-xs" />
-            </Field>
-            <label className="inline-flex items-center gap-2 glass-strong rounded-md px-3 py-2 text-sm cursor-pointer hover:glow-purple transition-shadow">
-              <Upload className="w-4 h-4" /> Upload background video
-              <input type="file" accept="video/*" className="hidden"
-                     onChange={e => e.target.files?.[0] && uploadVideo(e.target.files[0], "background")} />
-            </label>
-            <Slider label={`Background video opacity · ${(profile.video_opacity ?? 0.5).toFixed(2)}`} min={0.05} max={1} step={0.05}
-                    value={profile.video_opacity ?? 0.5} onChange={v => patch({ video_opacity: v })} />
-            {(profile.panel_video_url || profile.background_video_url) && (
-              <button onClick={() => patch({ panel_video_url: null, background_video_url: null })}
-                      className="text-xs text-destructive hover:underline">Remove videos</button>
+            <Slider label={`Panel image opacity · ${(profile.panel_background_opacity ?? 0.5).toFixed(2)}`} min={0.05} max={1} step={0.05}
+                    value={profile.panel_background_opacity ?? 0.5} onChange={v => patch({ panel_background_opacity: v })} />
+            {profile.panel_background_url && (
+              <button onClick={() => patch({ panel_background_url: null })}
+                      className="text-xs text-destructive hover:underline">Remove panel image</button>
             )}
           </Section>
 
+          <BadgeManager profileId={profile.id} accent={profile.accent_color} />
 
           {/* Music */}
           <Section title="Music">
@@ -660,4 +653,88 @@ function ColorRow({ value, onChange }: { value: string; onChange: (v: string) =>
 function hexFromAny(v: string) {
   if (v.startsWith("#")) return v;
   return "#a855f7";
+}
+
+type BadgeRow = Badge & { owned: boolean; equipped: boolean };
+
+function BadgeManager({ profileId, accent }: { profileId: string; accent: string }) {
+  const [rows, setRows] = useState<BadgeRow[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    const [{ data: all }, { data: mine }] = await Promise.all([
+      supabase.from("badges").select("*").order("sort"),
+      supabase.from("user_badges").select("badge_key,equipped").eq("user_id", profileId),
+    ]);
+    const owned = new Map((mine || []).map(m => [m.badge_key, m.equipped]));
+    setRows(((all || []) as Badge[]).map(b => ({
+      ...b,
+      owned: owned.has(b.key),
+      equipped: owned.get(b.key) ?? false,
+    })));
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [profileId]);
+
+  const check = async () => {
+    setBusy(true);
+    const { error } = await supabase.rpc("claim_badges");
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    await load();
+    toast.success("Badge progress checked");
+  };
+
+  const toggle = async (b: BadgeRow) => {
+    if (!b.owned) return toast.error("You haven't earned that one yet");
+    const next = !b.equipped;
+    setRows(rs => rs.map(r => r.key === b.key ? { ...r, equipped: next } : r));
+    const { error } = await supabase.from("user_badges").update({ equipped: next })
+      .eq("user_id", profileId).eq("badge_key", b.key);
+    if (error) {
+      toast.error(error.message);
+      setRows(rs => rs.map(r => r.key === b.key ? { ...r, equipped: !next } : r));
+    }
+  };
+
+  const ownedCount = rows.filter(r => r.owned).length;
+
+  return (
+    <Section title={`Badges · ${ownedCount}/${rows.length}`}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          Earn badges by using aurora.lol. Click an earned badge to equip or unequip it on your profile.
+        </p>
+        <button onClick={check} disabled={busy}
+                className="shrink-0 glass-strong rounded-md px-3 py-2 text-xs hover:glow-purple transition-shadow">
+          {busy ? "Checking..." : "Check progress"}
+        </button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {rows.map(b => {
+          const Icon = badgeIcon(b.icon);
+          return (
+            <button key={b.key} onClick={() => toggle(b)} disabled={!b.owned}
+                    className={`text-left rounded-lg px-3 py-2.5 flex items-start gap-2.5 transition-all ${b.owned ? "hover:-translate-y-0.5" : "opacity-40 cursor-not-allowed"}`}
+                    style={{
+                      ...tierRing(b.tier, b.owned ? b.color : "#6b7280"),
+                      background: b.equipped ? `${b.color}22` : "oklch(0.18 0.02 280 / 0.5)",
+                    }}>
+              <span className="mt-0.5 shrink-0" style={{ color: b.owned ? b.color : undefined }}>
+                <Icon className="w-4 h-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium truncate">{b.name}</span>
+                  <span className="text-[9px] uppercase tracking-wider font-mono opacity-60">{TIER_LABEL[b.tier] ?? b.tier}</span>
+                  {b.equipped && <span className="text-[9px] font-mono" style={{ color: accent }}>equipped</span>}
+                </span>
+                <span className="block text-[11px] text-muted-foreground">{b.description}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </Section>
+  );
 }

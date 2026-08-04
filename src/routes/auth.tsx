@@ -85,7 +85,7 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "https://www.auroras.lol/auth",
+        redirectTo: `${window.location.origin}/auth`,
       },
     });
 
