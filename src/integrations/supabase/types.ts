@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_codes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      badges: {
+        Row: {
+          admin_only: boolean
+          color: string
+          created_at: string
+          description: string
+          icon: string
+          key: string
+          name: string
+          sort: number
+          tier: string
+        }
+        Insert: {
+          admin_only?: boolean
+          color?: string
+          created_at?: string
+          description: string
+          icon?: string
+          key: string
+          name: string
+          sort?: number
+          tier?: string
+        }
+        Update: {
+          admin_only?: boolean
+          color?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          key?: string
+          name?: string
+          sort?: number
+          tier?: string
+        }
+        Relationships: []
+      }
       links: {
         Row: {
           created_at: string
@@ -64,7 +118,8 @@ export type Database = {
           background_effect: string | null
           background_image_url: string | null
           background_opacity: number
-          background_video_url: string | null
+          ban_reason: string | null
+          banned: boolean
           bio: string | null
           border_glow: boolean
           card_blur: number
@@ -84,7 +139,8 @@ export type Database = {
           layout_style: string
           music_title: string | null
           music_url: string | null
-          panel_video_url: string | null
+          panel_background_opacity: number
+          panel_background_url: string | null
           profile_style: string
           roblox_avatar_url: string | null
           roblox_url: string | null
@@ -92,7 +148,6 @@ export type Database = {
           tilt_cards: boolean
           updated_at: string
           username: string
-          video_opacity: number
           view_count: number
         }
         Insert: {
@@ -106,7 +161,8 @@ export type Database = {
           background_effect?: string | null
           background_image_url?: string | null
           background_opacity?: number
-          background_video_url?: string | null
+          ban_reason?: string | null
+          banned?: boolean
           bio?: string | null
           border_glow?: boolean
           card_blur?: number
@@ -126,7 +182,8 @@ export type Database = {
           layout_style?: string
           music_title?: string | null
           music_url?: string | null
-          panel_video_url?: string | null
+          panel_background_opacity?: number
+          panel_background_url?: string | null
           profile_style?: string
           roblox_avatar_url?: string | null
           roblox_url?: string | null
@@ -134,7 +191,6 @@ export type Database = {
           tilt_cards?: boolean
           updated_at?: string
           username: string
-          video_opacity?: number
           view_count?: number
         }
         Update: {
@@ -148,7 +204,8 @@ export type Database = {
           background_effect?: string | null
           background_image_url?: string | null
           background_opacity?: number
-          background_video_url?: string | null
+          ban_reason?: string | null
+          banned?: boolean
           bio?: string | null
           border_glow?: boolean
           card_blur?: number
@@ -168,7 +225,8 @@ export type Database = {
           layout_style?: string
           music_title?: string | null
           music_url?: string | null
-          panel_video_url?: string | null
+          panel_background_opacity?: number
+          panel_background_url?: string | null
           profile_style?: string
           roblox_avatar_url?: string | null
           roblox_url?: string | null
@@ -176,7 +234,6 @@ export type Database = {
           tilt_cards?: boolean
           updated_at?: string
           username?: string
-          video_opacity?: number
           view_count?: number
         }
         Relationships: []
@@ -219,15 +276,104 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          awarded_at: string
+          badge_key: string
+          equipped: boolean
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_key: string
+          equipped?: boolean
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_key?: string
+          equipped?: boolean
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_key_fkey"
+            columns: ["badge_key"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_grant_badge: {
+        Args: { _badge_key: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_revoke_badge: {
+        Args: { _badge_key: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_set_ban: {
+        Args: { _banned: boolean; _reason: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_set_role: {
+        Args: {
+          _enabled: boolean
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      award_badges: { Args: { _user_id: string }; Returns: undefined }
+      claim_badges: { Args: never; Returns: undefined }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      redeem_admin_code: { Args: { _code: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -354,6 +500,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

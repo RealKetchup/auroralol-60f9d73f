@@ -4,12 +4,13 @@ import { Crown, Pencil, Link2, Calendar, Star, Users, MessageSquare, BookOpen, U
 import { supabase } from "@/integrations/supabase/client";
 import { resolveStorageUrl } from "@/lib/storage";
 import { MusicPlayer } from "@/components/profile/MusicPlayer";
-import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, ImageBg, VideoBg, AuroraVeil } from "@/components/profile/BackgroundFx";
+import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, ImageBg, AuroraVeil } from "@/components/profile/BackgroundFx";
 import { ClickEffect, CustomCursor, CursorTrail } from "@/components/profile/Effects";
 import { LanyardCard } from "@/components/profile/LanyardCard";
 import { Guestbook } from "@/components/profile/Guestbook";
 import { detectIcon, IconFor, ICON_COLOR } from "@/lib/link-icons";
 import { fontStackFor, useRemoteFont } from "@/lib/fonts";
+import { badgeIcon, tierRing, type Badge, type UserBadge } from "@/lib/badges";
 
 type Profile = {
   id: string;
@@ -40,9 +41,9 @@ type Profile = {
   avatar_shape: string;
   animation_speed: number;
   profile_style: string;
-  panel_video_url: string | null;
-  background_video_url: string | null;
-  video_opacity: number;
+  panel_background_url: string | null;
+  panel_background_opacity: number;
+  banned: boolean;
   custom_font_url: string | null;
   custom_font_name: string | null;
   auto_roblox_avatar: boolean;
@@ -61,7 +62,7 @@ export const Route = createFileRoute("/$username")({
       .select("*")
       .eq("username", params.username.toLowerCase())
       .maybeSingle();
-    if (error || !profile) throw notFound();
+    if (error || !profile || (profile as { banned?: boolean }).banned) throw notFound();
     const { data: links } = await supabase
       .from("links")
       .select("id,label,url,icon,position")
@@ -143,8 +144,8 @@ function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [musicUrl, setMusicUrl] = useState<string | null>(null);
   const [bgImageUrl, setBgImageUrl] = useState<string | null>(null);
-  const [bgVideoUrl, setBgVideoUrl] = useState<string | null>(null);
-  const [panelVideoUrl, setPanelVideoUrl] = useState<string | null>(null);
+  const [panelBgUrl, setPanelBgUrl] = useState<string | null>(null);
+  const [badges, setBadges] = useState<(Badge & UserBadge)[]>([]);
   const [isOwner, setIsOwner] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [tab, setTab] = useState<"profile" | "guestbook" | "reviews" | "links">("profile");
@@ -155,8 +156,21 @@ function ProfilePage() {
     resolveStorageUrl("avatars", profile.avatar_url).then(setAvatarUrl);
     resolveStorageUrl("music", profile.music_url).then(setMusicUrl);
     resolveStorageUrl("avatars", profile.background_image_url).then(setBgImageUrl);
-    resolveStorageUrl("avatars", profile.background_video_url).then(setBgVideoUrl);
-    resolveStorageUrl("avatars", profile.panel_video_url).then(setPanelVideoUrl);
+    resolveStorageUrl("avatars", profile.panel_background_url).then(setPanelBgUrl);
+    supabase
+      .from("user_badges")
+      .select("badge_key,equipped,awarded_at,badges(key,name,description,icon,tier,color,admin_only,sort)")
+      .eq("user_id", profile.id)
+      .eq("equipped", true)
+      .then(({ data }) => {
+        const rows = (data || []) as unknown as (UserBadge & { badges: Badge | null })[];
+        setBadges(
+          rows
+            .filter(r => r.badges)
+            .map(r => ({ ...(r.badges as Badge), badge_key: r.badge_key, equipped: r.equipped, awarded_at: r.awarded_at }))
+            .sort((a, b) => a.sort - b.sort),
+        );
+      });
     supabase.auth.getUser().then(({ data }) => setIsOwner(data.user?.id === profile.id));
     supabase
       .from("reviews")
@@ -165,7 +179,7 @@ function ProfilePage() {
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data }) => setReviews((data || []) as Review[]));
-  }, [profile.id, profile.avatar_url, profile.music_url, profile.background_image_url, profile.background_video_url, profile.panel_video_url]);
+  }, [profile.id, profile.avatar_url, profile.music_url, profile.background_image_url, profile.panel_background_url]);
 
   const accent = profile.accent_color;
   const green = profile.secondary_color;
@@ -185,8 +199,7 @@ function ProfilePage() {
 
   return (
     <div className="min-h-screen relative text-[14px] sm:text-[15px]" style={speedStyle}>
-      {bgVideoUrl && <VideoBg url={bgVideoUrl} opacity={profile.video_opacity} />}
-      {bgImageUrl && !bgVideoUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
+      {bgImageUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
       {profile.aurora_preset !== "none" && (
         <AuroraVeil accent={accent} secondary={green} intensity={profile.aurora_intensity} preset={profile.aurora_preset} />
       )}
@@ -260,6 +273,16 @@ function ProfilePage() {
                    WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
                    boxShadow: profile.border_glow ? `0 20px 60px -24px ${accent}77, 0 0 0 1px ${accent}22 inset` : undefined,
                  }}>
+          {/* panel background image */}
+          {panelBgUrl && (
+            <div aria-hidden className="absolute inset-0 pointer-events-none"
+                 style={{
+                   backgroundImage: `url(${panelBgUrl})`,
+                   backgroundSize: "cover",
+                   backgroundPosition: "center",
+                   opacity: profile.panel_background_opacity ?? 0.5,
+                 }} />
+          )}
           {/* aurora banner */}
           <div aria-hidden className="absolute inset-0 pointer-events-none opacity-80"
                style={{
@@ -282,11 +305,23 @@ function ProfilePage() {
                   <Calendar className="w-3.5 h-3.5" /> Joined {joined}
                 </span>
               </div>
+              {badges.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  {badges.map(b => {
+                    const Icon = badgeIcon(b.icon);
+                    return (
+                      <span key={b.key} title={`${b.name} — ${b.description}`}
+                            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                            style={{ ...tierRing(b.tier, b.color), background: `${b.color}1a`, color: b.color }}>
+                        <Icon className="w-3.5 h-3.5" />
+                        {b.name}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
               {profile.bio && <p className="mt-4 text-sm sm:text-base opacity-90 whitespace-pre-wrap">{profile.bio}</p>}
             </div>
-            {panelVideoUrl && (
-              <PanelVideo url={panelVideoUrl} accent={accent} glow={profile.border_glow} />
-            )}
             <span className="absolute top-5 right-5 flex items-center gap-2 rounded-full px-3 py-1 text-xs"
                   style={{ background: "oklch(0.16 0.03 280 / 0.8)", border: `1px solid ${green}55` }}>
               <span className="w-2 h-2 rounded-full" style={{ background: green, boxShadow: `0 0 8px ${green}` }} /> Online
@@ -418,7 +453,7 @@ function ProfilePage() {
         </div>
 
         <footer className="text-center text-xs text-muted-foreground py-8">
-          © {new Date().getFullYear()} <Link to="/" className="hover:text-foreground">aurora.lol</Link> — built with neon and passion 💖
+          © {new Date().getFullYear()} <Link to="/" className="hover:text-foreground">aurora.lol</Link> — aurora.lol ✦
         </footer>
       </main>
 
@@ -482,46 +517,5 @@ function Panel({ id, title, icon, titleColor, right, profile, accent, children }
       </div>
       {children}
     </section>
-  );
-}
-
-function PanelVideo({ url, accent, glow }: { url: string; accent: string; glow: boolean }) {
-  const [muted, setMuted] = useState(true);
-  const [playing, setPlaying] = useState(true);
-  const ref = useRef<HTMLVideoElement>(null);
-
-  const toggle = () => {
-    const v = ref.current;
-    if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); } else { v.pause(); setPlaying(false); }
-  };
-
-  return (
-    <div className="w-full sm:w-64 shrink-0 rounded-xl overflow-hidden relative group"
-         style={{
-           border: `1px solid ${accent}66`,
-           boxShadow: glow ? `0 14px 40px -18px ${accent}` : undefined,
-         }}>
-      <video
-        ref={ref}
-        src={url}
-        autoPlay
-        muted={muted}
-        loop
-        playsInline
-        className="w-full aspect-video object-cover bg-black/40"
-      />
-      <div className="absolute bottom-0 inset-x-0 flex items-center gap-2 px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-           style={{ background: "oklch(0.1 0.02 280 / 0.7)" }}>
-        <button onClick={toggle} aria-label={playing ? "Pause video" : "Play video"}
-                className="rounded-md px-2 py-1 text-xs" style={{ border: `1px solid ${accent}55`, color: accent }}>
-          {playing ? "❚❚" : "▶"}
-        </button>
-        <button onClick={() => setMuted(m => !m)} aria-label={muted ? "Unmute video" : "Mute video"}
-                className="rounded-md px-2 py-1 text-xs" style={{ border: `1px solid ${accent}55`, color: accent }}>
-          {muted ? "🔇" : "🔊"}
-        </button>
-      </div>
-    </div>
   );
 }
