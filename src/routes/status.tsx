@@ -130,7 +130,6 @@ function StatusPage() {
 
     const results = { api: false, db: false, storage: false, web: false, cdn: false };
 
-    try {
       try {
         const { error } = await supabase.from('profiles').select('*', { head: true, count: 'exact' });
         if (error) throw error;
