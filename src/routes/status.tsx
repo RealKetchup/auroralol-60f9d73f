@@ -159,13 +159,16 @@ try {
         results.web = resp.ok;
       } catch (e) { results.web = false; }
 
-      try {
-        const resp = await fetch('/favicon.ico', { method: 'HEAD', cache: 'no-cache' });
-        results.cdn = resp.ok;
-      } catch (e) { results.cdn = false; }
-    } catch (e) {
-      console.error('Status check error:', e);
-    }
+try {
+  const resp = await fetch('/', {
+    method: 'HEAD',
+    cache: 'no-cache',
+  });
+
+  results.cdn = resp.ok;
+} catch {
+  results.cdn = false;
+}
 
     setServices([
       { label: 'API', status: results.api ? 'operational' : 'outage' },
