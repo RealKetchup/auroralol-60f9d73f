@@ -90,11 +90,7 @@ function Landing() {
   const start = async () => {
     if (signedIn) return navigate({ to: "/dashboard" });
     rememberAuthNext("/dashboard");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth` },
-    });
-    if (error) navigate({ to: "/auth" });
+    navigate({ to: "/auth" });
   };
 
   const marquee = (taken.length ? taken : ["nova", "kira", "echo", "void", "lumi", "zed", "aster", "nyx"])

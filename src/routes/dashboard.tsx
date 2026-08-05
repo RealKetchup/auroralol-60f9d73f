@@ -212,6 +212,7 @@ function Dashboard() {
       if (error.code === "23505" || /duplicate|unique/i.test(error.message)) return toast.error("That username is already taken");
       return toast.error(error.message);
     }
+    await supabase.rpc("claim_badges");
     toast.success("Saved");
   };
 

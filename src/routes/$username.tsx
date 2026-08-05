@@ -453,7 +453,7 @@ function ProfilePage() {
         </div>
 
         <footer className="text-center text-xs text-muted-foreground py-8">
-          © {new Date().getFullYear()} <Link to="/" className="hover:text-foreground">aurora.lol</Link> — aurora.lol ✦
+          © {new Date().getFullYear()} <Link to="/" className="hover:text-foreground">aurora.lol</Link> ✦
         </footer>
       </main>
 
