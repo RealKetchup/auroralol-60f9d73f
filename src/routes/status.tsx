@@ -137,10 +137,16 @@ function StatusPage() {
         results.db = true;
       } catch (e) { results.db = false; }
 
-      try {
-        const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/`, { method: "HEAD", headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string } });
-        results.api = resp.ok;
-      } catch (e) { results.api = false; }
+try {
+  const { error } = await supabase
+    .from("profiles")
+    .select("id")
+    .limit(1);
+
+  results.api = !error;
+} catch {
+  results.api = false;
+}
 
       try {
         const { data, error } = await supabase.storage.listBuckets();
