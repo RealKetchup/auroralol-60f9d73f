@@ -268,35 +268,37 @@ function ProfilePage() {
         {/* Hero */}
         <section id="profile" className="animate-fade-in-up rounded-2xl overflow-hidden relative"
                  style={{
-                   border: `1px solid ${accent}55`,
-                   background: `oklch(0.14 0.02 280 / ${clamp(profile.card_opacity)})`,
+                   border: `1px solid oklch(1 0 0 / 0.08)`,
+                   background: `oklch(0.15 0.02 280 / ${clamp(profile.card_opacity)})`,
                    backdropFilter: `blur(${profile.card_blur}px)`,
-                   WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
-                   boxShadow: profile.border_glow ? `0 20px 60px -24px ${accent}77, 0 0 0 1px ${accent}22 inset` : undefined,
+                   boxShadow: profile.border_glow
+                     ? `0 28px 70px -36px oklch(0 0 0 / 0.9), 0 0 0 1px ${accent}1f inset`
+                     : "0 24px 60px -38px oklch(0 0 0 / 0.85)",
                  }}>
           {/* panel background image */}
           {panelBgUrl && (
             <div aria-hidden className="absolute inset-0 pointer-events-none"
                  style={{
-                   backgroundImage: `url(${panelBgUrl})`,
+                   backgroundImage: `url("${panelBgUrl}")`,
                    backgroundSize: "cover",
                    backgroundPosition: "center",
                    opacity: profile.panel_background_opacity ?? 0.5,
                  }} />
           )}
-          {/* aurora banner */}
-          <div aria-hidden className="absolute inset-0 pointer-events-none opacity-80"
+          {/* soft accent wash */}
+          <div aria-hidden className="absolute inset-0 pointer-events-none"
                style={{
-                 background: `radial-gradient(ellipse 60% 120% at 78% 10%, ${accent}55, transparent 65%),
-                              radial-gradient(ellipse 70% 90% at 95% 80%, ${green}44, transparent 65%)`,
+                 background: `radial-gradient(ellipse 55% 120% at 85% 0%, ${accent}33, transparent 62%),
+                              linear-gradient(to bottom, oklch(0.11 0.02 280 / 0.15), oklch(0.11 0.02 280 / 0.45))`,
                }} />
-          <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <div className="relative p-6 sm:p-9 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-7">
             <Avatar url={shownAvatar} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="lg" />
             <div className="min-w-0 flex-1 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight truncate">{name}</h1>
-                {isSiteOwner && <Crown className="w-6 h-6 shrink-0" style={{ color: "oklch(0.85 0.18 80)", filter: `drop-shadow(0 0 8px oklch(0.85 0.18 80))` }} />}
+                <h1 className="text-[26px] sm:text-4xl font-semibold tracking-[-0.02em] truncate">{name}</h1>
+                {isSiteOwner && <Crown className="w-5 h-5 shrink-0" style={{ color: "oklch(0.85 0.15 80)" }} />}
               </div>
+
               <div className="mt-1 text-muted-foreground">@{profile.username}</div>
               <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs">
                 {isSiteOwner && (
