@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { resolveStorageUrl } from "@/lib/storage";
+import { uploadWithProgress, IMAGE_TYPES, VIDEO_TYPES, isVideoSource, UploadError } from "@/lib/upload";
 import { ensureUserProfile } from "@/lib/auth-flow";
 import { FONT_PRESETS } from "@/lib/fonts";
 import { getRobloxAvatar } from "@/lib/roblox.functions";
