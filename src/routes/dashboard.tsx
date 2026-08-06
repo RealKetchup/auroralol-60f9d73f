@@ -224,38 +224,84 @@ function Dashboard() {
 
   const uploadAvatar = async (file: File) => {
     if (!profile) return;
-    if (file.size > 4 * 1024 * 1024) return toast.error("Max 4MB");
-    const ext = file.name.split(".").pop() || "png";
-    const path = `${profile.id}/avatar.${ext}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
-    if (error) return toast.error(error.message);
-    await supabase.from("profiles").update({ avatar_url: path }).eq("id", profile.id);
-    patch({ avatar_url: path });
-    resolveStorageUrl("avatars", path).then(setAvatarPreview);
-    toast.success("Avatar updated");
+    try {
+      const path = await uploadWithProgress({
+        bucket: "avatars",
+        basePath: `${profile.id}/avatar`,
+        file,
+        accept: IMAGE_TYPES,
+        maxBytes: 4 * 1024 * 1024,
+      });
+      const { error } = await supabase.from("profiles").update({ avatar_url: path }).eq("id", profile.id);
+      if (error) throw new UploadError(error.message);
+      patch({ avatar_url: path });
+      resolveStorageUrl("avatars", path).then(setAvatarPreview);
+      toast.success("Avatar updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not upload avatar");
+    }
   };
 
+  /** Profile background: the media behind the whole page. Images + GIF + MP4/WebM. */
   const uploadBackground = async (file: File) => {
     if (!profile) return;
-    if (file.size > 6 * 1024 * 1024) return toast.error("Max 6MB");
-    const ext = file.name.split(".").pop() || "jpg";
-    const path = `${profile.id}/background.${ext}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
-    if (error) return toast.error(error.message);
-    patch({ background_image_url: path });
-    toast.success("Background uploaded — hit save");
+    setBgError(null);
+    setBgProgress(0);
+    // Instant local preview while the file is still uploading.
+    const localUrl = URL.createObjectURL(file);
+    setBgPreview(localUrl);
+    try {
+      const path = await uploadWithProgress({
+        bucket: "avatars",
+        basePath: `${profile.id}/background`,
+        file,
+        accept: [...IMAGE_TYPES, ...VIDEO_TYPES],
+        maxBytes: 25 * 1024 * 1024,
+        onProgress: setBgProgress,
+      });
+      const { error } = await supabase.from("profiles").update({ background_image_url: path }).eq("id", profile.id);
+      if (error) throw new UploadError(error.message);
+      patch({ background_image_url: path });
+      const url = await resolveStorageUrl("avatars", path);
+      setBgPreview(url);
+      URL.revokeObjectURL(localUrl);
+      toast.success("Background saved");
+    } catch (err) {
+      URL.revokeObjectURL(localUrl);
+      const message = err instanceof Error ? err.message : "Could not upload background";
+      setBgError(message);
+      setBgPreview(await resolveStorageUrl("avatars", profile.background_image_url));
+      toast.error(message);
+    } finally {
+      setBgProgress(null);
+    }
+  };
+
+  const removeBackground = async () => {
+    if (!profile) return;
+    patch({ background_image_url: null });
+    setBgPreview(null);
+    setBgError(null);
+    await supabase.from("profiles").update({ background_image_url: null }).eq("id", profile.id);
   };
 
   const uploadPanelBackground = async (file: File) => {
     if (!profile) return;
-    if (file.size > 6 * 1024 * 1024) return toast.error("Max 6MB");
-    const ext = file.name.split(".").pop() || "jpg";
-    const path = `${profile.id}/panel.${ext}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
-    if (error) return toast.error(error.message);
-    patch({ panel_background_url: path });
-    toast.success("Panel background uploaded — hit save");
+    try {
+      const path = await uploadWithProgress({
+        bucket: "avatars",
+        basePath: `${profile.id}/panel`,
+        file,
+        accept: IMAGE_TYPES,
+        maxBytes: 8 * 1024 * 1024,
+      });
+      patch({ panel_background_url: path });
+      toast.success("Panel background uploaded — hit save");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not upload panel image");
+    }
   };
+
 
   const syncRobloxAvatar = async () => {
     if (!profile?.roblox_url) return toast.error("Add your Roblox profile URL first");
