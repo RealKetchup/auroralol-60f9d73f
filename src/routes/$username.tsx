@@ -333,35 +333,36 @@ function ProfilePage() {
 
           {/* Stats bar */}
           <div className="relative border-t px-6 sm:px-8 py-5 flex flex-col sm:flex-row items-center gap-6"
-               style={{ borderColor: `${accent}33`, background: "oklch(0.11 0.02 280 / 0.5)" }}>
+               style={{ borderColor: "oklch(1 0 0 / 0.07)", background: "oklch(0.11 0.02 280 / 0.45)" }}>
             <div className="flex items-center gap-8 sm:gap-12">
               <Stat label="Guests" value={String(profile.view_count ?? 0)} icon={<Users className="w-3.5 h-3.5" />} />
-              <div className="w-px h-10" style={{ background: `${accent}33` }} />
+              <div className="w-px h-10" style={{ background: "oklch(1 0 0 / 0.08)" }} />
               <Stat label="Messages" value={String(reviews.length)} icon={<MessageSquare className="w-3.5 h-3.5" />} />
-              <div className="w-px h-10" style={{ background: `${accent}33` }} />
+              <div className="w-px h-10" style={{ background: "oklch(1 0 0 / 0.08)" }} />
               <Stat label="Rating" value={rated.length ? avgRating.toFixed(1) : "—"} icon={<Star className="w-3.5 h-3.5" />} accent={green} />
             </div>
-            <div className="sm:ml-auto flex items-center gap-3">
+            <div className="sm:ml-auto flex items-center gap-2.5">
               {links.slice(0, 5).map((l: Lnk) => {
                 const kind = detectIcon(l.url);
                 const color = ICON_COLOR[kind];
                 return (
                   <a key={l.id} href={l.url} target="_blank" rel="noreferrer" aria-label={l.label} title={l.label}
-                     className="w-11 h-11 rounded-xl flex items-center justify-center hover:-translate-y-0.5 transition-transform"
-                     style={{ border: `1px solid ${color}66`, background: `${color}18`, color, boxShadow: `0 0 18px -8px ${color}` }}>
-                    <IconFor kind={kind} className="w-5 h-5" />
+                     className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-foreground/[0.08]"
+                     style={{ border: "1px solid oklch(1 0 0 / 0.08)", background: "oklch(1 0 0 / 0.04)", color }}>
+                    <IconFor kind={kind} className="w-[18px] h-[18px]" />
                   </a>
                 );
               })}
               {profile.roblox_url && (
                 <a href={profile.roblox_url} target="_blank" rel="noreferrer" aria-label="Roblox profile"
-                   className="w-11 h-11 rounded-xl flex items-center justify-center hover:-translate-y-0.5 transition-transform"
-                   style={{ border: `1px solid ${accent}66`, background: `${accent}18`, color: accent }}>
-                  <Link2 className="w-5 h-5" />
+                   className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-foreground/[0.08]"
+                   style={{ border: "1px solid oklch(1 0 0 / 0.08)", background: "oklch(1 0 0 / 0.04)", color: accent }}>
+                  <Link2 className="w-[18px] h-[18px]" />
                 </a>
               )}
             </div>
           </div>
+
         </section>
 
         {/* Grid */}
