@@ -482,14 +482,25 @@ function Avatar({ url, name, shape, accent, green, size }: {
   url: string | null; name: string; shape: string; accent: string; green: string; size: "sm" | "lg";
 }) {
   const radius = shape === "square" ? "rounded-2xl" : shape === "hex" ? "rounded-[30%]" : "rounded-full";
-  const dim = size === "lg" ? "w-28 h-28 sm:w-36 sm:h-36" : "w-7 h-7";
+  const dim = size === "lg" ? "w-24 h-24 sm:w-32 sm:h-32" : "w-7 h-7";
   return (
-    <div className={`${dim} ${radius} shrink-0 p-[3px] ${size === "lg" ? "animate-pulse-glow" : ""}`}
-         style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
+    <div
+      className={`${dim} ${radius} shrink-0 p-[2px]`}
+      style={{
+        background: `linear-gradient(150deg, ${accent}cc, ${green}66)`,
+        boxShadow: size === "lg" ? "0 14px 34px -18px oklch(0 0 0 / 0.9)" : undefined,
+      }}
+    >
       {url ? (
-        <img src={url} alt={`${name}'s avatar`} className={`w-full h-full ${radius} object-cover bg-background`} />
+        <img
+          src={url}
+          alt={`${name}'s avatar`}
+          loading={size === "lg" ? "eager" : "lazy"}
+          decoding="async"
+          className={`w-full h-full ${radius} object-cover bg-background`}
+        />
       ) : (
-        <div className={`w-full h-full ${radius} bg-background flex items-center justify-center font-bold ${size === "lg" ? "text-4xl sm:text-5xl" : "text-xs"}`}>
+        <div className={`w-full h-full ${radius} bg-background flex items-center justify-center font-semibold ${size === "lg" ? "text-3xl sm:text-4xl" : "text-xs"}`}>
           {name[0]?.toUpperCase()}
         </div>
       )}
@@ -505,18 +516,20 @@ function Panel({ id, title, icon, titleColor, right, profile, accent, children }
     <section id={id}
              className={`rounded-2xl overflow-hidden animate-fade-in-up ${profile.tilt_cards ? "tilt-card" : ""}`}
              style={{
-               border: `1px solid ${profile.border_glow ? `${accent}44` : `${accent}22`}`,
-               background: `oklch(0.14 0.02 280 / ${clamp(profile.card_opacity)})`,
+               border: `1px solid oklch(1 0 0 / 0.07)`,
+               background: `oklch(0.15 0.02 280 / ${clamp(profile.card_opacity)})`,
                backdropFilter: `blur(${profile.card_blur}px)`,
-               WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
-               boxShadow: profile.border_glow ? `0 18px 50px -26px ${accent}66` : undefined,
+               boxShadow: profile.border_glow
+                 ? `0 24px 60px -34px oklch(0 0 0 / 0.9), 0 0 0 1px ${accent}1a inset`
+                 : "0 20px 50px -34px oklch(0 0 0 / 0.85)",
              }}>
-      <div className="flex items-center gap-2 px-5 py-4">
-        <span style={{ color: titleColor || accent }}>{icon}</span>
-        <h2 className="font-semibold tracking-tight" style={{ color: titleColor || accent }}>{title}</h2>
+      <div className="flex items-center gap-2 px-5 pt-5 pb-3">
+        <span className="opacity-90" style={{ color: titleColor || accent }}>{icon}</span>
+        <h2 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-foreground/85">{title}</h2>
         {right && <span className="ml-auto">{right}</span>}
       </div>
       {children}
     </section>
   );
 }
+
