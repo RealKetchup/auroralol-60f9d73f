@@ -200,7 +200,7 @@ function ProfilePage() {
 
   return (
     <div className="min-h-screen relative text-[14px] sm:text-[15px]" style={speedStyle}>
-      {bgImageUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
+      {bgImageUrl && <ProfileBackground url={bgImageUrl} opacity={profile.background_opacity} />}
       {profile.aurora_preset !== "none" && (
         <AuroraVeil accent={accent} secondary={green} intensity={profile.aurora_intensity} preset={profile.aurora_preset} />
       )}
