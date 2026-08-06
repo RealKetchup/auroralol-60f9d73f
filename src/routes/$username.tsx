@@ -264,7 +264,7 @@ function ProfilePage() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Hero */}
         <section id="profile" className="animate-fade-in-up rounded-2xl overflow-hidden relative"
                  style={{
