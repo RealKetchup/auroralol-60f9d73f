@@ -144,6 +144,9 @@ function Dashboard() {
   const [links, setLinks] = useState<Lnk[]>([]);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [musicPath, setMusicPath] = useState<string>("");
+  const [bgPreview, setBgPreview] = useState<string | null>(null);
+  const [bgProgress, setBgProgress] = useState<number | null>(null);
+  const [bgError, setBgError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
