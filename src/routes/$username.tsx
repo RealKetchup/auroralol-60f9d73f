@@ -4,7 +4,8 @@ import { Crown, Pencil, Link2, Calendar, Star, Users, MessageSquare, BookOpen, U
 import { supabase } from "@/integrations/supabase/client";
 import { resolveStorageUrl } from "@/lib/storage";
 import { MusicPlayer } from "@/components/profile/MusicPlayer";
-import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, ImageBg, AuroraVeil } from "@/components/profile/BackgroundFx";
+import { Particles, AuroraBg, Stars, Grid, Matrix, GradientMesh, AuroraVeil } from "@/components/profile/BackgroundFx";
+import { ProfileBackground } from "@/components/profile/ProfileBackground";
 import { ClickEffect, CustomCursor, CursorTrail } from "@/components/profile/Effects";
 import { LanyardCard } from "@/components/profile/LanyardCard";
 import { Guestbook } from "@/components/profile/Guestbook";
@@ -199,7 +200,7 @@ function ProfilePage() {
 
   return (
     <div className="min-h-screen relative text-[14px] sm:text-[15px]" style={speedStyle}>
-      {bgImageUrl && <ImageBg url={bgImageUrl} opacity={profile.background_opacity} />}
+      {bgImageUrl && <ProfileBackground url={bgImageUrl} opacity={profile.background_opacity} />}
       {profile.aurora_preset !== "none" && (
         <AuroraVeil accent={accent} secondary={green} intensity={profile.aurora_intensity} preset={profile.aurora_preset} />
       )}
@@ -267,35 +268,37 @@ function ProfilePage() {
         {/* Hero */}
         <section id="profile" className="animate-fade-in-up rounded-2xl overflow-hidden relative"
                  style={{
-                   border: `1px solid ${accent}55`,
-                   background: `oklch(0.14 0.02 280 / ${clamp(profile.card_opacity)})`,
+                   border: `1px solid oklch(1 0 0 / 0.08)`,
+                   background: `oklch(0.15 0.02 280 / ${clamp(profile.card_opacity)})`,
                    backdropFilter: `blur(${profile.card_blur}px)`,
-                   WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
-                   boxShadow: profile.border_glow ? `0 20px 60px -24px ${accent}77, 0 0 0 1px ${accent}22 inset` : undefined,
+                   boxShadow: profile.border_glow
+                     ? `0 28px 70px -36px oklch(0 0 0 / 0.9), 0 0 0 1px ${accent}1f inset`
+                     : "0 24px 60px -38px oklch(0 0 0 / 0.85)",
                  }}>
           {/* panel background image */}
           {panelBgUrl && (
             <div aria-hidden className="absolute inset-0 pointer-events-none"
                  style={{
-                   backgroundImage: `url(${panelBgUrl})`,
+                   backgroundImage: `url("${panelBgUrl}")`,
                    backgroundSize: "cover",
                    backgroundPosition: "center",
                    opacity: profile.panel_background_opacity ?? 0.5,
                  }} />
           )}
-          {/* aurora banner */}
-          <div aria-hidden className="absolute inset-0 pointer-events-none opacity-80"
+          {/* soft accent wash */}
+          <div aria-hidden className="absolute inset-0 pointer-events-none"
                style={{
-                 background: `radial-gradient(ellipse 60% 120% at 78% 10%, ${accent}55, transparent 65%),
-                              radial-gradient(ellipse 70% 90% at 95% 80%, ${green}44, transparent 65%)`,
+                 background: `radial-gradient(ellipse 55% 120% at 85% 0%, ${accent}33, transparent 62%),
+                              linear-gradient(to bottom, oklch(0.11 0.02 280 / 0.15), oklch(0.11 0.02 280 / 0.45))`,
                }} />
-          <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <div className="relative p-6 sm:p-9 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-7">
             <Avatar url={shownAvatar} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="lg" />
             <div className="min-w-0 flex-1 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight truncate">{name}</h1>
-                {isSiteOwner && <Crown className="w-6 h-6 shrink-0" style={{ color: "oklch(0.85 0.18 80)", filter: `drop-shadow(0 0 8px oklch(0.85 0.18 80))` }} />}
+                <h1 className="text-[26px] sm:text-4xl font-semibold tracking-[-0.02em] truncate">{name}</h1>
+                {isSiteOwner && <Crown className="w-5 h-5 shrink-0" style={{ color: "oklch(0.85 0.15 80)" }} />}
               </div>
+
               <div className="mt-1 text-muted-foreground">@{profile.username}</div>
               <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs">
                 {isSiteOwner && (
@@ -330,35 +333,36 @@ function ProfilePage() {
 
           {/* Stats bar */}
           <div className="relative border-t px-6 sm:px-8 py-5 flex flex-col sm:flex-row items-center gap-6"
-               style={{ borderColor: `${accent}33`, background: "oklch(0.11 0.02 280 / 0.5)" }}>
+               style={{ borderColor: "oklch(1 0 0 / 0.07)", background: "oklch(0.11 0.02 280 / 0.45)" }}>
             <div className="flex items-center gap-8 sm:gap-12">
               <Stat label="Guests" value={String(profile.view_count ?? 0)} icon={<Users className="w-3.5 h-3.5" />} />
-              <div className="w-px h-10" style={{ background: `${accent}33` }} />
+              <div className="w-px h-10" style={{ background: "oklch(1 0 0 / 0.08)" }} />
               <Stat label="Messages" value={String(reviews.length)} icon={<MessageSquare className="w-3.5 h-3.5" />} />
-              <div className="w-px h-10" style={{ background: `${accent}33` }} />
+              <div className="w-px h-10" style={{ background: "oklch(1 0 0 / 0.08)" }} />
               <Stat label="Rating" value={rated.length ? avgRating.toFixed(1) : "—"} icon={<Star className="w-3.5 h-3.5" />} accent={green} />
             </div>
-            <div className="sm:ml-auto flex items-center gap-3">
+            <div className="sm:ml-auto flex items-center gap-2.5">
               {links.slice(0, 5).map((l: Lnk) => {
                 const kind = detectIcon(l.url);
                 const color = ICON_COLOR[kind];
                 return (
                   <a key={l.id} href={l.url} target="_blank" rel="noreferrer" aria-label={l.label} title={l.label}
-                     className="w-11 h-11 rounded-xl flex items-center justify-center hover:-translate-y-0.5 transition-transform"
-                     style={{ border: `1px solid ${color}66`, background: `${color}18`, color, boxShadow: `0 0 18px -8px ${color}` }}>
-                    <IconFor kind={kind} className="w-5 h-5" />
+                     className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-foreground/[0.08]"
+                     style={{ border: "1px solid oklch(1 0 0 / 0.08)", background: "oklch(1 0 0 / 0.04)", color }}>
+                    <IconFor kind={kind} className="w-[18px] h-[18px]" />
                   </a>
                 );
               })}
               {profile.roblox_url && (
                 <a href={profile.roblox_url} target="_blank" rel="noreferrer" aria-label="Roblox profile"
-                   className="w-11 h-11 rounded-xl flex items-center justify-center hover:-translate-y-0.5 transition-transform"
-                   style={{ border: `1px solid ${accent}66`, background: `${accent}18`, color: accent }}>
-                  <Link2 className="w-5 h-5" />
+                   className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-foreground/[0.08]"
+                   style={{ border: "1px solid oklch(1 0 0 / 0.08)", background: "oklch(1 0 0 / 0.04)", color: accent }}>
+                  <Link2 className="w-[18px] h-[18px]" />
                 </a>
               )}
             </div>
           </div>
+
         </section>
 
         {/* Grid */}
@@ -436,9 +440,9 @@ function ProfilePage() {
                     const color = ICON_COLOR[kind];
                     return (
                       <a key={l.id} href={l.url} target="_blank" rel="noreferrer"
-                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 border border-border/50 bg-background/30 hover:-translate-y-0.5 transition-all group">
+                         className="flex items-center gap-3 rounded-xl px-3 py-2.5 border border-foreground/[0.07] bg-foreground/[0.03] hover:bg-foreground/[0.07] transition-colors duration-200 group">
                         <span className="flex items-center justify-center w-8 h-8 rounded-md shrink-0"
-                              style={{ background: `${color}22`, color, boxShadow: `0 0 12px ${color}44` }}>
+                              style={{ background: `${color}1f`, color }}>
                           <IconFor kind={kind} className="w-4 h-4" />
                         </span>
                         <span className="truncate font-medium">{l.label}</span>
@@ -469,7 +473,7 @@ function clamp(n: number) {
 function Stat({ label, value, icon, accent }: { label: string; value: string; icon?: React.ReactNode; accent?: string }) {
   return (
     <div className="text-center">
-      <div className="text-2xl sm:text-3xl font-bold" style={accent ? { color: accent } : undefined}>{value}</div>
+      <div className="text-2xl sm:text-[28px] font-semibold tracking-tight" style={accent ? { color: accent } : undefined}>{value}</div>
       <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
         {icon}{label}
       </div>
@@ -481,14 +485,25 @@ function Avatar({ url, name, shape, accent, green, size }: {
   url: string | null; name: string; shape: string; accent: string; green: string; size: "sm" | "lg";
 }) {
   const radius = shape === "square" ? "rounded-2xl" : shape === "hex" ? "rounded-[30%]" : "rounded-full";
-  const dim = size === "lg" ? "w-28 h-28 sm:w-36 sm:h-36" : "w-7 h-7";
+  const dim = size === "lg" ? "w-24 h-24 sm:w-32 sm:h-32" : "w-7 h-7";
   return (
-    <div className={`${dim} ${radius} shrink-0 p-[3px] ${size === "lg" ? "animate-pulse-glow" : ""}`}
-         style={{ background: `linear-gradient(135deg, ${accent}, ${green})` }}>
+    <div
+      className={`${dim} ${radius} shrink-0 p-[2px]`}
+      style={{
+        background: `linear-gradient(150deg, ${accent}cc, ${green}66)`,
+        boxShadow: size === "lg" ? "0 14px 34px -18px oklch(0 0 0 / 0.9)" : undefined,
+      }}
+    >
       {url ? (
-        <img src={url} alt={`${name}'s avatar`} className={`w-full h-full ${radius} object-cover bg-background`} />
+        <img
+          src={url}
+          alt={`${name}'s avatar`}
+          loading={size === "lg" ? "eager" : "lazy"}
+          decoding="async"
+          className={`w-full h-full ${radius} object-cover bg-background`}
+        />
       ) : (
-        <div className={`w-full h-full ${radius} bg-background flex items-center justify-center font-bold ${size === "lg" ? "text-4xl sm:text-5xl" : "text-xs"}`}>
+        <div className={`w-full h-full ${radius} bg-background flex items-center justify-center font-semibold ${size === "lg" ? "text-3xl sm:text-4xl" : "text-xs"}`}>
           {name[0]?.toUpperCase()}
         </div>
       )}
@@ -504,18 +519,20 @@ function Panel({ id, title, icon, titleColor, right, profile, accent, children }
     <section id={id}
              className={`rounded-2xl overflow-hidden animate-fade-in-up ${profile.tilt_cards ? "tilt-card" : ""}`}
              style={{
-               border: `1px solid ${profile.border_glow ? `${accent}44` : `${accent}22`}`,
-               background: `oklch(0.14 0.02 280 / ${clamp(profile.card_opacity)})`,
+               border: `1px solid oklch(1 0 0 / 0.07)`,
+               background: `oklch(0.15 0.02 280 / ${clamp(profile.card_opacity)})`,
                backdropFilter: `blur(${profile.card_blur}px)`,
-               WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
-               boxShadow: profile.border_glow ? `0 18px 50px -26px ${accent}66` : undefined,
+               boxShadow: profile.border_glow
+                 ? `0 24px 60px -34px oklch(0 0 0 / 0.9), 0 0 0 1px ${accent}1a inset`
+                 : "0 20px 50px -34px oklch(0 0 0 / 0.85)",
              }}>
-      <div className="flex items-center gap-2 px-5 py-4">
-        <span style={{ color: titleColor || accent }}>{icon}</span>
-        <h2 className="font-semibold tracking-tight" style={{ color: titleColor || accent }}>{title}</h2>
+      <div className="flex items-center gap-2 px-5 pt-5 pb-3">
+        <span className="opacity-90" style={{ color: titleColor || accent }}>{icon}</span>
+        <h2 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-foreground/85">{title}</h2>
         {right && <span className="ml-auto">{right}</span>}
       </div>
       {children}
     </section>
   );
 }
+
