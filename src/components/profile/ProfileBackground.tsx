@@ -63,7 +63,7 @@ export function ProfileBackground({
   const scrim = 0.25 + media * 0.15;
 
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-20 overflow-hidden bg-background">
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-background">
       {video ? (
         <video
           ref={videoRef}
