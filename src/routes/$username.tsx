@@ -440,9 +440,9 @@ function ProfilePage() {
                     const color = ICON_COLOR[kind];
                     return (
                       <a key={l.id} href={l.url} target="_blank" rel="noreferrer"
-                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 border border-border/50 bg-background/30 hover:-translate-y-0.5 transition-all group">
+                         className="flex items-center gap-3 rounded-xl px-3 py-2.5 border border-foreground/[0.07] bg-foreground/[0.03] hover:bg-foreground/[0.07] transition-colors duration-200 group">
                         <span className="flex items-center justify-center w-8 h-8 rounded-md shrink-0"
-                              style={{ background: `${color}22`, color, boxShadow: `0 0 12px ${color}44` }}>
+                              style={{ background: `${color}1f`, color }}>
                           <IconFor kind={kind} className="w-4 h-4" />
                         </span>
                         <span className="truncate font-medium">{l.label}</span>
@@ -473,7 +473,7 @@ function clamp(n: number) {
 function Stat({ label, value, icon, accent }: { label: string; value: string; icon?: React.ReactNode; accent?: string }) {
   return (
     <div className="text-center">
-      <div className="text-2xl sm:text-3xl font-bold" style={accent ? { color: accent } : undefined}>{value}</div>
+      <div className="text-2xl sm:text-[28px] font-semibold tracking-tight" style={accent ? { color: accent } : undefined}>{value}</div>
       <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
         {icon}{label}
       </div>
