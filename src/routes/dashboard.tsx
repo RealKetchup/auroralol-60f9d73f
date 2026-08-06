@@ -160,6 +160,7 @@ function Dashboard() {
         setLinks((ls || []) as Lnk[]);
         setMusicPath(p.music_url || "");
         resolveStorageUrl("avatars", p.avatar_url).then(setAvatarPreview);
+        resolveStorageUrl("avatars", (p as Profile).background_image_url).then(setBgPreview);
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Could not load dashboard");
       } finally {
