@@ -599,19 +599,48 @@ function Dashboard() {
             <Field label="Effect">
               <Pills options={BG_OPTIONS} value={profile.background_effect} onChange={v => patch({ background_effect: v })} />
             </Field>
-            <label className="inline-flex items-center gap-2 glass-strong rounded-md px-3 py-2 text-sm cursor-pointer hover:glow-purple transition-shadow">
-              <Upload className="w-4 h-4" /> Upload image
-              <input type="file" accept="image/*" className="hidden"
-                     onChange={e => e.target.files?.[0] && uploadBackground(e.target.files[0])} />
-            </label>
+            <Field label="Page background media">
+              <div className="space-y-3">
+                {bgPreview && (
+                  <div className="relative rounded-xl overflow-hidden border border-foreground/[0.08] aspect-video bg-background/40">
+                    {isVideoSource(bgPreview) || isVideoSource(profile.background_image_url) ? (
+                      <video src={bgPreview} muted loop autoPlay playsInline className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={bgPreview} alt="Background preview" className="w-full h-full object-cover" />
+                    )}
+                    <div aria-hidden className="absolute inset-0"
+                         style={{ background: `oklch(0.11 0.02 280 / ${1 - profile.background_opacity})` }} />
+                  </div>
+                )}
+                {bgProgress !== null && (
+                  <div>
+                    <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+                      <div className="h-full rounded-full bg-primary transition-[width] duration-200"
+                           style={{ width: `${bgProgress}%` }} />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">Uploading · {bgProgress}%</p>
+                  </div>
+                )}
+                {bgError && <p className="text-xs text-destructive">{bgError}</p>}
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className={`inline-flex items-center gap-2 glass-strong rounded-md px-3 py-2 text-sm transition-colors ${bgProgress !== null ? "opacity-60 pointer-events-none" : "cursor-pointer hover:bg-foreground/[0.06]"}`}>
+                    <Upload className="w-4 h-4" /> {profile.background_image_url ? "Replace" : "Upload"} background
+                    <input type="file" className="hidden"
+                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm"
+                           onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) uploadBackground(f); }} />
+                  </label>
+                  {profile.background_image_url && (
+                    <button onClick={removeBackground} className="text-xs text-destructive hover:underline">Remove</button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">JPG, PNG, WEBP, GIF or MP4/WebM · up to 25MB. Saves instantly.</p>
+              </div>
+            </Field>
             {profile.background_image_url && (
-              <>
-                <Slider label={`Image opacity · ${profile.background_opacity.toFixed(2)}`} min={0.05} max={1} step={0.05}
-                        value={profile.background_opacity} onChange={v => patch({ background_opacity: v })} />
-                <button onClick={() => patch({ background_image_url: null })}
-                        className="text-xs text-destructive hover:underline">Remove image</button>
-              </>
+              <Slider label={`Background visibility · ${profile.background_opacity.toFixed(2)}`} min={0.05} max={1} step={0.05}
+                      value={profile.background_opacity} onChange={v => patch({ background_opacity: v })} />
             )}
+
           </Section>
 
           <Section title="Effects">
