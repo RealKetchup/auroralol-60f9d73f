@@ -1,0 +1,420 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://bwxsafihzsgjlwgvfdfc.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "aurora-lol",
+      "version": "1.0.0",
+      "title": "aurora.lol"
+    },
+    "tools": [
+      {
+        "name": "get_my_profile",
+        "title": "Get my profile",
+        "description": "Read the signed-in user's full aurora.lol profile: username, display name, bio, avatar, linked accounts, theme settings and view count.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_my_profile",
+        "title": "Update my profile",
+        "description": "Change any part of the signed-in user's aurora.lol profile. Every field is optional — only the ones you pass are written. Covers identity (username, display name, bio, avatar), linked accounts (Discord, Roblox), music, and the full theme/effects configuration.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "description": "New handle, lowercase letters/numbers/_/- only. Must be unique."
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "bio": {
+              "type": "string"
+            },
+            "avatar_url": {
+              "type": "string"
+            },
+            "discord_id": {
+              "type": "string",
+              "description": "Discord user ID for live presence via Lanyard."
+            },
+            "roblox_url": {
+              "type": "string",
+              "description": "Full Roblox profile URL."
+            },
+            "auto_roblox_avatar": {
+              "type": "boolean",
+              "description": "Use the Roblox headshot as the profile picture."
+            },
+            "music_url": {
+              "type": "string"
+            },
+            "music_title": {
+              "type": "string"
+            },
+            "accent_color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "secondary_color": {
+              "$ref": "#/properties/accent_color"
+            },
+            "font_family": {
+              "type": "string",
+              "description": "Font preset id, e.g. space-grotesk, jetbrains-mono, inter."
+            },
+            "custom_font_url": {
+              "type": "string",
+              "description": "Google Fonts stylesheet URL."
+            },
+            "custom_font_name": {
+              "type": "string"
+            },
+            "profile_style": {
+              "type": "string",
+              "enum": [
+                "code",
+                "card"
+              ],
+              "description": "code = editor-style page, card = minimal card."
+            },
+            "layout_style": {
+              "type": "string"
+            },
+            "background_effect": {
+              "type": "string",
+              "enum": [
+                "particles",
+                "stars",
+                "grid",
+                "matrix",
+                "gradient",
+                "none"
+              ]
+            },
+            "background_image_url": {
+              "type": "string"
+            },
+            "background_opacity": {
+              "type": "number"
+            },
+            "panel_background_url": {
+              "type": "string"
+            },
+            "panel_background_opacity": {
+              "type": "number"
+            },
+            "aurora_preset": {
+              "type": "string",
+              "description": "aurora, ribbons, beams or glow."
+            },
+            "aurora_intensity": {
+              "type": "number"
+            },
+            "card_opacity": {
+              "type": "number"
+            },
+            "card_blur": {
+              "type": "number"
+            },
+            "border_glow": {
+              "type": "boolean"
+            },
+            "tilt_cards": {
+              "type": "boolean"
+            },
+            "click_effect": {
+              "type": "boolean"
+            },
+            "click_effect_style": {
+              "type": "string",
+              "enum": [
+                "burst",
+                "ripple",
+                "sparkle",
+                "hearts"
+              ]
+            },
+            "custom_cursor": {
+              "type": "boolean"
+            },
+            "cursor_trail": {
+              "type": "boolean"
+            },
+            "entry_animation": {
+              "type": "string"
+            },
+            "avatar_shape": {
+              "type": "string",
+              "enum": [
+                "circle",
+                "squircle",
+                "square"
+              ]
+            },
+            "animation_speed": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_links",
+        "title": "List my links",
+        "description": "List the links shown on the signed-in user's aurora.lol profile, in display order.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "add_link",
+        "title": "Add a link",
+        "description": "Add a link to the signed-in user's aurora.lol profile. The site auto-detects the icon for known services (Roblox, YouTube, TikTok, Discord and more).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "description": "Text shown on the link."
+            },
+            "url": {
+              "type": "string",
+              "description": "Destination URL, including https://"
+            },
+            "position": {
+              "type": "integer",
+              "description": "Sort position; defaults to the end of the list."
+            }
+          },
+          "required": [
+            "label",
+            "url"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "delete_link",
+        "title": "Delete a link",
+        "description": "Remove one of the signed-in user's profile links by its id (use list_my_links first).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Link id."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_guestbook",
+        "title": "List my guestbook",
+        "description": "Read the guestbook entries left on the signed-in user's aurora.lol profile, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "description": "How many entries to return (default 25)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "delete_guestbook_entry",
+        "title": "Delete a guestbook entry",
+        "description": "Delete a guestbook entry from the signed-in user's own profile by its id.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Guestbook entry id."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_badges",
+        "title": "List my badges",
+        "description": "List every aurora.lol badge, marking which ones the signed-in user has earned and which are currently equipped on their profile. Also re-checks for newly earned badges.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "equip_badge",
+        "title": "Equip or unequip a badge",
+        "description": "Show or hide one of the signed-in user's earned badges on their public profile.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "badge_key": {
+              "type": "string",
+              "description": "Badge key from list_my_badges."
+            },
+            "equipped": {
+              "type": "boolean",
+              "description": "true to show it on the profile, false to hide it."
+            }
+          },
+          "required": [
+            "badge_key",
+            "equipped"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_profile",
+        "title": "Look up a profile",
+        "description": "Look up any public aurora.lol profile by username and get its display name, bio, links, equipped badges and view count.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "description": "The handle, without the aurora.lol/ prefix."
+            }
+          },
+          "required": [
+            "username"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "browse_profiles",
+        "title": "Browse profiles",
+        "description": "Browse aurora.lol profiles. Optionally search by username or display name, and sort by newest or most viewed.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Text to match against username or display name."
+            },
+            "sort": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "views"
+              ],
+              "description": "Ordering, defaults to newest."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "How many profiles to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

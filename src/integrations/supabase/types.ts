@@ -353,6 +353,7 @@ export type Database = {
         Args: { _banned: boolean; _reason: string; _user_id: string }
         Returns: undefined
       }
+      admin_set_code: { Args: { _new_code: string }; Returns: boolean }
       admin_set_role: {
         Args: {
           _enabled: boolean
@@ -370,6 +371,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_site_owner: { Args: never; Returns: boolean }
       redeem_admin_code: { Args: { _code: string }; Returns: boolean }
     }
     Enums: {

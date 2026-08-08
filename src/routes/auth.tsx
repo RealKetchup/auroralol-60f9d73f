@@ -80,7 +80,9 @@ function AuthPage() {
     setError(null);
     setLoading(true);
 
-    rememberAuthNext("/dashboard");
+    rememberAuthNext(
+      new URLSearchParams(window.location.search).get("next") || "/dashboard",
+    );
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

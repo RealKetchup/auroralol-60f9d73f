@@ -113,16 +113,24 @@ function AdminPanel() {
   const [selected, setSelected] = useState<Row | null>(null);
   const [owned, setOwned] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
+  const [newCode, setNewCode] = useState("");
+  const [savingCode, setSavingCode] = useState(false);
+  const [sort, setSort] = useState<"new" | "views" | "name">("new");
+  const [only, setOnly] = useState<"all" | "banned" | "quiet">("all");
+  const [edit, setEdit] = useState({ username: "", display_name: "", bio: "" });
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: profiles }, { data: bs }] = await Promise.all([
+    const [{ data: profiles }, { data: bs }, ownerCheck] = await Promise.all([
       supabase.from("profiles").select("id,username,display_name,banned,ban_reason,view_count,created_at")
         .order("created_at", { ascending: false }).limit(300),
       supabase.from("badges").select("*").order("sort"),
+      supabase.rpc("is_site_owner"),
     ]);
     setRows((profiles || []) as Row[]);
     setBadges((bs || []) as Badge[]);
+    setIsOwner(ownerCheck.data === true);
     setLoading(false);
   }, []);
 
@@ -130,6 +138,7 @@ function AdminPanel() {
 
   const pick = async (r: Row) => {
     setSelected(r);
+    setEdit({ username: r.username, display_name: r.display_name || "", bio: "" });
     const { data } = await supabase.from("user_badges").select("badge_key").eq("user_id", r.id);
     setOwned((data || []).map(d => d.badge_key));
   };
@@ -153,6 +162,18 @@ function AdminPanel() {
     toast.success(has ? "Badge removed" : "Badge granted");
   };
 
+  const grantAll = async (grant: boolean) => {
+    if (!selected) return;
+    const keys = grant ? badges.map(b => b.key).filter(k => !owned.includes(k)) : owned;
+    if (keys.length === 0) return;
+    for (const key of keys) {
+      await supabase.rpc(grant ? "admin_grant_badge" : "admin_revoke_badge",
+        { _user_id: selected.id, _badge_key: key });
+    }
+    setOwned(grant ? badges.map(b => b.key) : []);
+    toast.success(grant ? "All badges granted" : "All badges revoked");
+  };
+
   const makeAdmin = async (r: Row, enabled: boolean) => {
     const { error } = await supabase.rpc("admin_set_role", { _user_id: r.id, _role: "admin", _enabled: enabled });
     if (error) return toast.error(error.message);
@@ -166,13 +187,45 @@ function AdminPanel() {
     toast.success("Guestbook cleared");
   };
 
+  const patchProfile = async (r: Row, patch: Record<string, unknown>, msg: string) => {
+    const { error } = await supabase.from("profiles").update(patch as never).eq("id", r.id);
+    if (error) return toast.error(error.message);
+    toast.success(msg);
+    load();
+  };
+
+  const saveIdentity = async () => {
+    if (!selected) return;
+    const username = edit.username.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 24);
+    if (username.length < 2) return toast.error("Username is too short");
+    await patchProfile(selected, { username, display_name: edit.display_name || null }, "Profile details saved");
+    setSelected(s => s ? { ...s, username, display_name: edit.display_name || null } : s);
+  };
+
+  const changeCode = async () => {
+    if (newCode.trim().length < 6) return toast.error("Use at least 6 characters");
+    setSavingCode(true);
+    const { data, error } = await supabase.rpc("admin_set_code", { _new_code: newCode.trim() });
+    setSavingCode(false);
+    setNewCode("");
+    if (error) return toast.error(error.message);
+    if (!data) return toast.error("Only the owner account can change the admin password");
+    toast.success("Admin password updated");
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     window.location.assign("/");
   };
 
-  const filtered = rows.filter(r =>
-    !q || r.username.includes(q.toLowerCase()) || (r.display_name || "").toLowerCase().includes(q.toLowerCase()));
+  const filtered = rows
+    .filter(r => !q || r.username.includes(q.toLowerCase()) || (r.display_name || "").toLowerCase().includes(q.toLowerCase()))
+    .filter(r => only === "all" ? true : only === "banned" ? r.banned : (r.view_count || 0) === 0)
+    .sort((a, b) =>
+      sort === "views" ? (b.view_count || 0) - (a.view_count || 0)
+        : sort === "name" ? a.username.localeCompare(b.username)
+          : +new Date(b.created_at) - +new Date(a.created_at));
+
 
   return (
     <div className="min-h-screen">
@@ -201,11 +254,28 @@ function AdminPanel() {
 
         <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 items-start">
           <section className="glass p-5">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-3">
               <Search className="w-4 h-4 text-muted-foreground" />
               <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search username or display name"
                      className="flex-1 bg-input rounded-md px-3 py-2 text-sm border border-border" />
             </div>
+            <div className="flex flex-wrap gap-1.5 mb-4 text-[11px]">
+              {([["new", "Newest"], ["views", "Most viewed"], ["name", "A–Z"]] as const).map(([k, label]) => (
+                <button key={k} onClick={() => setSort(k)}
+                        className={`rounded-md px-2.5 py-1.5 border ${sort === k ? "border-primary/60 text-primary" : "border-border text-muted-foreground"}`}>
+                  {label}
+                </button>
+              ))}
+              <span className="w-px bg-border mx-1" />
+              {([["all", "All"], ["banned", "Banned"], ["quiet", "No views"]] as const).map(([k, label]) => (
+                <button key={k} onClick={() => setOnly(k)}
+                        className={`rounded-md px-2.5 py-1.5 border ${only === k ? "border-primary/60 text-primary" : "border-border text-muted-foreground"}`}>
+                  {label}
+                </button>
+              ))}
+              <span className="ml-auto self-center font-mono text-muted-foreground">{filtered.length} shown</span>
+            </div>
+
             {loading ? (
               <p className="font-mono text-sm text-muted-foreground">loading profiles...</p>
             ) : (
@@ -266,10 +336,46 @@ function AdminPanel() {
                   </button>
                 </div>
 
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-widest opacity-70">Profile details</h3>
+                  <input value={edit.username} onChange={e => setEdit(s => ({ ...s, username: e.target.value }))}
+                         placeholder="username" aria-label="Username"
+                         className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border font-mono" />
+                  <input value={edit.display_name} onChange={e => setEdit(s => ({ ...s, display_name: e.target.value }))}
+                         placeholder="Display name" aria-label="Display name"
+                         className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border" />
+                  <button onClick={saveIdentity} className="glass-strong rounded-md px-3 py-2 text-xs">Save details</button>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-widest opacity-70">Content resets</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => patchProfile(selected, { bio: null }, "Bio cleared")} className="glass-strong rounded-md px-3 py-2 text-xs">Clear bio</button>
+                    <button onClick={() => patchProfile(selected, { avatar_url: null, roblox_avatar_url: null, auto_roblox_avatar: false }, "Avatar cleared")} className="glass-strong rounded-md px-3 py-2 text-xs">Clear avatar</button>
+                    <button onClick={() => patchProfile(selected, { music_url: null, music_title: null }, "Music removed")} className="glass-strong rounded-md px-3 py-2 text-xs">Remove music</button>
+                    <button onClick={() => patchProfile(selected, { background_image_url: null }, "Background cleared")} className="glass-strong rounded-md px-3 py-2 text-xs">Clear background</button>
+                    <button onClick={() => patchProfile(selected, { panel_background_url: null }, "Panel background cleared")} className="glass-strong rounded-md px-3 py-2 text-xs">Clear panel art</button>
+                    <button onClick={() => patchProfile(selected, { discord_id: null, roblox_url: null }, "Linked accounts cleared")} className="glass-strong rounded-md px-3 py-2 text-xs">Unlink accounts</button>
+                    <button onClick={() => patchProfile(selected, { view_count: 0 }, "View count reset")} className="glass-strong rounded-md px-3 py-2 text-xs">Reset views</button>
+                    <button onClick={() => patchProfile(selected, {
+                              accent_color: "#a855f7", secondary_color: "#22c55e", font_family: "space-grotesk",
+                              custom_font_url: null, custom_font_name: null, aurora_preset: "aurora",
+                              background_effect: "particles", click_effect_style: "burst", profile_style: "code",
+                              layout_style: "classic", card_opacity: 0.55, card_blur: 20, border_glow: true,
+                              cursor_trail: false, tilt_cards: false, avatar_shape: "circle", animation_speed: 1.0,
+                            }, "Theme reset to defaults")}
+                            className="rounded-md px-3 py-2 text-xs border border-border">Reset theme</button>
+                  </div>
+                </div>
+
                 <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-widest opacity-70 mb-2">
-                    Badges · {owned.length}/{badges.length}
-                  </h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-xs font-semibold uppercase tracking-widest opacity-70">
+                      Badges · {owned.length}/{badges.length}
+                    </h3>
+                    <button onClick={() => grantAll(true)} className="ml-auto text-[11px] text-muted-foreground hover:text-foreground">grant all</button>
+                    <button onClick={() => grantAll(false)} className="text-[11px] text-muted-foreground hover:text-foreground">revoke all</button>
+                  </div>
                   <div className="grid grid-cols-2 gap-1.5 max-h-[420px] overflow-auto pr-1">
                     {badges.map(b => {
                       const Icon = badgeIcon(b.icon);
@@ -283,13 +389,43 @@ function AdminPanel() {
                         </button>
                       );
                     })}
+
                   </div>
                 </div>
               </>
             )}
           </section>
         </div>
+
+        <section className="glass p-5">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold uppercase tracking-widest opacity-80">Admin password</h2>
+          </div>
+          {isOwner ? (
+            <>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Only the <span className="font-mono">owner</span> account can change this. It replaces the password used to unlock /admin.
+              </p>
+              <form onSubmit={e => { e.preventDefault(); changeCode(); }} className="mt-4 flex flex-col sm:flex-row gap-2 max-w-lg">
+                <input type="password" value={newCode} onChange={e => setNewCode(e.target.value)}
+                       autoComplete="new-password" placeholder="New admin password (6+ characters)" aria-label="New admin password"
+                       className="flex-1 bg-input rounded-md px-3 py-2.5 text-sm border border-border font-mono" />
+                <button type="submit" disabled={savingCode || newCode.trim().length < 6}
+                        className="rounded-md px-5 py-2.5 text-sm font-medium disabled:opacity-50"
+                        style={{ background: "var(--grad-aurora)", color: "white" }}>
+                  {savingCode ? "Saving..." : "Update"}
+                </button>
+              </form>
+            </>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Only the owner account can change the admin password.
+            </p>
+          )}
+        </section>
       </main>
+
     </div>
   );
 }
