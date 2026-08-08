@@ -150,7 +150,7 @@ function Landing() {
           <h1 className="mt-6 text-[13vw] leading-[0.86] sm:text-7xl lg:text-8xl font-bold tracking-tighter">
             <span className="block">One link.</span>
             <span className="block" style={{ color: p.accent, textShadow: `0 0 60px ${p.accent}55`, transition: "color 900ms" }}>
-              Zero limits.
+              ion what to put here.
             </span>
           </h1>
 
