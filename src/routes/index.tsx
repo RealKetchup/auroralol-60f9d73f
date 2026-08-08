@@ -5,7 +5,7 @@ import { rememberAuthNext } from "@/lib/auth-flow";
 import { badgeIcon, tierRing, TIER_LABEL, type Badge } from "@/lib/badges";
 import {
   ArrowRight, Music, Sparkles, MessageCircle, Gamepad2, Link as LinkIcon, Wand2,
-  Type, Palette, Image as ImageIcon, Shield, Star,
+  Type, Palette, Image as ImageIcon, Shield,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -203,16 +203,22 @@ function Landing() {
               <div className="w-20 h-20 rounded-2xl p-[3px]" style={{ background: `linear-gradient(135deg, ${p.accent}, ${p.second})` }}>
                 <div className="w-full h-full rounded-2xl bg-background grid place-items-center text-2xl">✦</div>
               </div>
-              <div className="mt-3 text-xl font-bold">your name</div>
-              <div className="font-mono text-xs text-muted-foreground">aurora.lol/you</div>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {["Rookie", "Resident DJ", "Auroramancer", "Legend"].map((b, i) => (
-                  <span key={b} className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]"
-                        style={{ border: `1px solid ${i % 2 ? p.second : p.accent}77`, color: i % 2 ? p.second : p.accent }}>
-                    <Star className="w-2.5 h-2.5" /> {b}
-                  </span>
-                ))}
+              <div className="mt-3 flex items-center gap-2">
+                <span className="text-xl font-bold">your name</span>
+                <span className="inline-flex items-center gap-1">
+                  {(badges.length ? badges.slice(0, 4) : []).map(b => {
+                    const Icon = badgeIcon(b.icon);
+                    return (
+                      <span key={b.key} title={b.name} aria-label={b.name}
+                            className="grid place-items-center rounded-full w-[22px] h-[22px]"
+                            style={{ ...tierRing(b.tier, b.color), background: `${b.color}1a`, color: b.color }}>
+                        <Icon className="w-3 h-3" />
+                      </span>
+                    );
+                  })}
+                </span>
               </div>
+              <div className="font-mono text-xs text-muted-foreground">aurora.lol/you</div>
               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                 {[["1.2k", "guests"], ["48", "messages"], ["5.0", "rating"]].map(([v, l]) => (
                   <div key={l} className="rounded-xl py-2" style={{ border: `1px solid ${p.accent}33` }}>

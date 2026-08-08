@@ -294,35 +294,31 @@ function ProfilePage() {
           <div className="relative p-6 sm:p-9 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-7">
             <Avatar url={shownAvatar} name={name} shape={profile.avatar_shape} accent={accent} green={green} size="lg" />
             <div className="min-w-0 flex-1 text-center sm:text-left">
-              <div className="flex items-center justify-center sm:justify-start gap-2">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
                 <h1 className="text-[26px] sm:text-4xl font-semibold tracking-[-0.02em] truncate">{name}</h1>
                 {isSiteOwner && <Crown className="w-5 h-5 shrink-0" style={{ color: "oklch(0.85 0.15 80)" }} />}
+                {badges.length > 0 && (
+                  <span className="inline-flex items-center gap-1 pl-1">
+                    {badges.map(b => {
+                      const Icon = badgeIcon(b.icon);
+                      return (
+                        <span key={b.key} title={`${b.name} — ${b.description}`} aria-label={b.name}
+                              className="grid place-items-center rounded-full w-[26px] h-[26px]"
+                              style={{ ...tierRing(b.tier, b.color), background: `${b.color}1a`, color: b.color }}>
+                          <Icon className="w-3.5 h-3.5" />
+                        </span>
+                      );
+                    })}
+                  </span>
+                )}
               </div>
 
               <div className="mt-1 text-muted-foreground">@{profile.username}</div>
               <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs">
-                {isSiteOwner && (
-                  <span className="rounded-full px-3 py-1 font-medium" style={{ background: accent, color: "oklch(0.12 0.02 280)" }}>Owner</span>
-                )}
                 <span className="flex items-center gap-1.5 text-muted-foreground">
                   <Calendar className="w-3.5 h-3.5" /> Joined {joined}
                 </span>
               </div>
-              {badges.length > 0 && (
-                <div className="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  {badges.map(b => {
-                    const Icon = badgeIcon(b.icon);
-                    return (
-                      <span key={b.key} title={`${b.name} — ${b.description}`}
-                            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
-                            style={{ ...tierRing(b.tier, b.color), background: `${b.color}1a`, color: b.color }}>
-                        <Icon className="w-3.5 h-3.5" />
-                        {b.name}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
               {profile.bio && <p className="mt-4 text-sm sm:text-base opacity-90 whitespace-pre-wrap">{profile.bio}</p>}
             </div>
             <span className="absolute top-5 right-5 flex items-center gap-2 rounded-full px-3 py-1 text-xs"
