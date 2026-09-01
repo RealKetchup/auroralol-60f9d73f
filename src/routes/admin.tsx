@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { badgeIcon, tierRing, type Badge } from "@/lib/badges";
-import { Ban, Check, Search, Shield, Trash2, RefreshCw, LogOut, ExternalLink } from "lucide-react";
+import { Ban, Check, Search, Shield, Trash2, RefreshCw, LogOut, ExternalLink, Download, Copy, Users } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
