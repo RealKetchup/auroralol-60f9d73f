@@ -71,24 +71,42 @@ export function CustomCursor({ accent, secondary }: { accent: string; secondary:
   useEffect(() => {
     const cursor = document.createElement("div");
     cursor.style.cssText = `
-      position: fixed; width: 22px; height: 22px; border-radius: 999px;
+      position: fixed; left: 0; top: 0; width: 22px; height: 22px; border-radius: 999px;
       pointer-events: none; z-index: 9998;
-      transform: translate(-50%, -50%);
       background: linear-gradient(135deg, ${accent}, ${secondary});
       box-shadow: 0 0 20px ${accent}, 0 0 40px ${secondary};
       mix-blend-mode: screen;
-      transition: transform 0.08s ease-out;
+      opacity: 0;
+      will-change: transform;
+      contain: layout style paint;
     `;
     document.body.appendChild(cursor);
-    const move = (e: MouseEvent) => {
-      cursor.style.left = e.clientX + "px";
-      cursor.style.top = e.clientY + "px";
+
+    let x = 0, y = 0, raf = 0, dirty = false;
+    const paint = () => {
+      raf = 0;
+      dirty = false;
+      cursor.style.transform = `translate3d(${x - 11}px, ${y - 11}px, 0)`;
     };
-    window.addEventListener("mousemove", move);
-    return () => { window.removeEventListener("mousemove", move); cursor.remove(); };
+    const move = (e: MouseEvent) => {
+      x = e.clientX;
+      y = e.clientY;
+      if (cursor.style.opacity !== "1") cursor.style.opacity = "1";
+      if (!dirty) {
+        dirty = true;
+        raf = requestAnimationFrame(paint);
+      }
+    };
+    window.addEventListener("mousemove", move, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", move);
+      if (raf) cancelAnimationFrame(raf);
+      cursor.remove();
+    };
   }, [accent, secondary]);
   return null;
 }
+
 
 export function CursorTrail({ color }: { color: string }) {
   useEffect(() => {
