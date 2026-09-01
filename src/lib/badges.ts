@@ -2,7 +2,7 @@ import {
   Sparkles, User, BookOpen, Image as ImageIcon, Music, Link as LinkIcon, Network, Users,
   MessageCircle, Gamepad2, Palette, Type, Wand2, Square, Zap, MousePointer2, RotateCw,
   LayoutPanelTop, TrendingUp, Flame, Crown, MessageSquare, Heart, Star, Pencil, Check,
-  Shield, Clock,
+  Shield, Clock, PenTool, Wallpaper, Wind, Gem, Trophy, Medal, BadgeCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
