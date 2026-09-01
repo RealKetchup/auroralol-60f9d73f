@@ -471,8 +471,12 @@ function AdminPanel() {
                     <button onClick={() => grantAll(true)} className="ml-auto text-[11px] text-muted-foreground hover:text-foreground">grant all</button>
                     <button onClick={() => grantAll(false)} className="text-[11px] text-muted-foreground hover:text-foreground">revoke all</button>
                   </div>
+                  <input value={badgeQ} onChange={e => setBadgeQ(e.target.value)} placeholder="Filter badges"
+                         aria-label="Filter badges"
+                         className="w-full mb-2 bg-input rounded-md px-3 py-1.5 text-xs border border-border" />
                   <div className="grid grid-cols-2 gap-1.5 max-h-[420px] overflow-auto pr-1">
-                    {badges.map(b => {
+                    {shownBadges.map(b => {
+
                       const Icon = badgeIcon(b.icon);
                       const has = owned.includes(b.key);
                       return (
