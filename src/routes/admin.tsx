@@ -230,6 +230,68 @@ function AdminPanel() {
         : sort === "name" ? a.username.localeCompare(b.username)
           : +new Date(b.created_at) - +new Date(a.created_at));
 
+  const toggleSel = (id: string) =>
+    setSel(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
+  const selRows = rows.filter(r => sel.includes(r.id));
+
+  const bulkBan = async (banned: boolean) => {
+    if (selRows.length === 0) return;
+    const reason = banned ? (window.prompt(`Ban reason for ${selRows.length} profiles?`) || "Violated the rules") : "";
+    setBusy(banned ? "Banning..." : "Unbanning...");
+    for (const r of selRows) {
+      await supabase.rpc("admin_set_ban", { _user_id: r.id, _banned: banned, _reason: reason });
+    }
+    setBusy("");
+    setRows(rs => rs.map(x => sel.includes(x.id) ? { ...x, banned, ban_reason: reason || null } : x));
+    toast.success(`${selRows.length} profiles updated`);
+  };
+
+  const bulkBadge = async (grant: boolean) => {
+    if (selRows.length === 0) return;
+    const key = window.prompt(`Badge key to ${grant ? "grant" : "revoke"}? (${badges.slice(0, 6).map(b => b.key).join(", ")}...)`);
+    if (!key) return;
+    if (!badges.some(b => b.key === key)) return toast.error("Unknown badge key");
+    setBusy("Updating badges...");
+    for (const r of selRows) {
+      await supabase.rpc(grant ? "admin_grant_badge" : "admin_revoke_badge", { _user_id: r.id, _badge_key: key });
+    }
+    setBusy("");
+    toast.success(`Badge ${grant ? "granted to" : "revoked from"} ${selRows.length} profiles`);
+  };
+
+  const bulkResetViews = async () => {
+    if (selRows.length === 0) return;
+    setBusy("Resetting views...");
+    const { error } = await supabase.from("profiles").update({ view_count: 0 } as never).in("id", sel);
+    setBusy("");
+    if (error) return toast.error(error.message);
+    toast.success("Views reset");
+    load();
+  };
+
+  const exportCsv = () => {
+    const head = "username,display_name,banned,ban_reason,views,created_at";
+    const body = filtered.map(r =>
+      [r.username, r.display_name || "", r.banned, (r.ban_reason || "").replace(/[",\n]/g, " "), r.view_count, r.created_at]
+        .map(v => `"${String(v)}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([`${head}\n${body}`], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `aurora-profiles-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const copyLink = async (r: Row) => {
+    await navigator.clipboard.writeText(`${window.location.origin}/${r.username}`);
+    toast.success("Link copied");
+  };
+
+  const shownBadges = badges.filter(b =>
+    !badgeQ || b.name.toLowerCase().includes(badgeQ.toLowerCase()) || b.key.includes(badgeQ.toLowerCase()));
+
+
+
 
   return (
     <div className="min-h-screen">
