@@ -347,12 +347,31 @@ function AdminPanel() {
               <span className="ml-auto self-center font-mono text-muted-foreground">{filtered.length} shown</span>
             </div>
 
+            <div className="flex flex-wrap items-center gap-1.5 mb-4 text-[11px]">
+              <button onClick={() => setSel(filtered.map(r => r.id))} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground flex items-center gap-1.5">
+                <Users className="w-3 h-3" /> Select all shown
+              </button>
+              <button onClick={() => setSel([])} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Clear</button>
+              {sel.length > 0 && (
+                <>
+                  <span className="font-mono text-primary px-1">{sel.length} selected</span>
+                  <button onClick={() => bulkBan(true)} className="rounded-md px-2.5 py-1.5 border border-destructive/40 text-destructive">Ban</button>
+                  <button onClick={() => bulkBan(false)} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Unban</button>
+                  <button onClick={() => bulkBadge(true)} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Grant badge</button>
+                  <button onClick={() => bulkBadge(false)} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Revoke badge</button>
+                  <button onClick={bulkResetViews} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Reset views</button>
+                </>
+              )}
+            </div>
+
             {loading ? (
               <p className="font-mono text-sm text-muted-foreground">loading profiles...</p>
             ) : (
               <ul className="divide-y divide-border/40 max-h-[560px] overflow-auto">
                 {filtered.map(r => (
                   <li key={r.id} className="py-2.5 flex items-center gap-3">
+                    <input type="checkbox" checked={sel.includes(r.id)} onChange={() => toggleSel(r.id)}
+                           aria-label={`Select @${r.username}`} className="accent-primary w-3.5 h-3.5" />
                     <button onClick={() => pick(r)} className="min-w-0 flex-1 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium truncate">{r.display_name || r.username}</span>
@@ -361,6 +380,10 @@ function AdminPanel() {
                       <div className="text-[11px] font-mono text-muted-foreground truncate">
                         @{r.username} · {r.view_count} views
                       </div>
+                    </button>
+                    <button onClick={() => copyLink(r)} title="Copy profile link"
+                            className="p-2 rounded-md hover:bg-muted/40 text-muted-foreground">
+                      <Copy className="w-3.5 h-3.5" />
                     </button>
                     <a href={`/${r.username}`} target="_blank" rel="noreferrer" aria-label={`Open @${r.username}`}
                        className="p-2 rounded-md hover:bg-muted/40 text-muted-foreground">
@@ -373,6 +396,7 @@ function AdminPanel() {
                   </li>
                 ))}
                 {filtered.length === 0 && <li className="py-3 text-sm text-muted-foreground">No profiles match.</li>}
+
               </ul>
             )}
           </section>
