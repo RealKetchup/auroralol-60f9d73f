@@ -119,6 +119,10 @@ function AdminPanel() {
   const [sort, setSort] = useState<"new" | "views" | "name">("new");
   const [only, setOnly] = useState<"all" | "banned" | "quiet">("all");
   const [edit, setEdit] = useState({ username: "", display_name: "", bio: "" });
+  const [badgeQ, setBadgeQ] = useState("");
+  const [sel, setSel] = useState<string[]>([]);
+  const [busy, setBusy] = useState("");
+
 
   const load = useCallback(async () => {
     setLoading(true);
