@@ -300,6 +300,10 @@ function AdminPanel() {
           <Link to="/" className="font-mono font-bold text-aurora">aurora.lol</Link>
           <span className="rounded-full px-2.5 py-0.5 text-[10px] font-mono border border-primary/60 text-primary">ADMIN</span>
           <div className="ml-auto flex items-center gap-2">
+            {busy && <span className="text-xs font-mono text-muted-foreground">{busy}</span>}
+            <button onClick={exportCsv} className="glass-strong px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5">
+              <Download className="w-3.5 h-3.5" /> Export CSV
+            </button>
             <button onClick={load} className="glass-strong px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5">
               <RefreshCw className="w-3.5 h-3.5" /> Refresh
             </button>
@@ -307,6 +311,7 @@ function AdminPanel() {
               <LogOut className="w-3.5 h-3.5" /> Sign out
             </button>
           </div>
+
         </div>
       </header>
 
