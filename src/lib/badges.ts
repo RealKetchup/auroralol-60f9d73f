@@ -48,6 +48,13 @@ export const BADGE_ICONS: Record<string, LucideIcon> = {
   check: Check,
   shield: Shield,
   clock: Clock,
+  pentool: PenTool,
+  wallpaper: Wallpaper,
+  wind: Wind,
+  gem: Gem,
+  trophy: Trophy,
+  medal: Medal,
+  badgecheck: BadgeCheck,
 };
 
 export function badgeIcon(name: string): LucideIcon {
