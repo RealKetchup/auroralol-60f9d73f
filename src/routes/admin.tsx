@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { badgeIcon, tierRing, type Badge } from "@/lib/badges";
-import { Ban, Check, Search, Shield, Trash2, RefreshCw, LogOut, ExternalLink } from "lucide-react";
+import { Ban, Check, Search, Shield, Trash2, RefreshCw, LogOut, ExternalLink, Download, Copy, Users } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -119,6 +119,10 @@ function AdminPanel() {
   const [sort, setSort] = useState<"new" | "views" | "name">("new");
   const [only, setOnly] = useState<"all" | "banned" | "quiet">("all");
   const [edit, setEdit] = useState({ username: "", display_name: "", bio: "" });
+  const [badgeQ, setBadgeQ] = useState("");
+  const [sel, setSel] = useState<string[]>([]);
+  const [busy, setBusy] = useState("");
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -226,6 +230,68 @@ function AdminPanel() {
         : sort === "name" ? a.username.localeCompare(b.username)
           : +new Date(b.created_at) - +new Date(a.created_at));
 
+  const toggleSel = (id: string) =>
+    setSel(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
+  const selRows = rows.filter(r => sel.includes(r.id));
+
+  const bulkBan = async (banned: boolean) => {
+    if (selRows.length === 0) return;
+    const reason = banned ? (window.prompt(`Ban reason for ${selRows.length} profiles?`) || "Violated the rules") : "";
+    setBusy(banned ? "Banning..." : "Unbanning...");
+    for (const r of selRows) {
+      await supabase.rpc("admin_set_ban", { _user_id: r.id, _banned: banned, _reason: reason });
+    }
+    setBusy("");
+    setRows(rs => rs.map(x => sel.includes(x.id) ? { ...x, banned, ban_reason: reason || null } : x));
+    toast.success(`${selRows.length} profiles updated`);
+  };
+
+  const bulkBadge = async (grant: boolean) => {
+    if (selRows.length === 0) return;
+    const key = window.prompt(`Badge key to ${grant ? "grant" : "revoke"}? (${badges.slice(0, 6).map(b => b.key).join(", ")}...)`);
+    if (!key) return;
+    if (!badges.some(b => b.key === key)) return toast.error("Unknown badge key");
+    setBusy("Updating badges...");
+    for (const r of selRows) {
+      await supabase.rpc(grant ? "admin_grant_badge" : "admin_revoke_badge", { _user_id: r.id, _badge_key: key });
+    }
+    setBusy("");
+    toast.success(`Badge ${grant ? "granted to" : "revoked from"} ${selRows.length} profiles`);
+  };
+
+  const bulkResetViews = async () => {
+    if (selRows.length === 0) return;
+    setBusy("Resetting views...");
+    const { error } = await supabase.from("profiles").update({ view_count: 0 } as never).in("id", sel);
+    setBusy("");
+    if (error) return toast.error(error.message);
+    toast.success("Views reset");
+    load();
+  };
+
+  const exportCsv = () => {
+    const head = "username,display_name,banned,ban_reason,views,created_at";
+    const body = filtered.map(r =>
+      [r.username, r.display_name || "", r.banned, (r.ban_reason || "").replace(/[",\n]/g, " "), r.view_count, r.created_at]
+        .map(v => `"${String(v)}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([`${head}\n${body}`], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `aurora-profiles-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const copyLink = async (r: Row) => {
+    await navigator.clipboard.writeText(`${window.location.origin}/${r.username}`);
+    toast.success("Link copied");
+  };
+
+  const shownBadges = badges.filter(b =>
+    !badgeQ || b.name.toLowerCase().includes(badgeQ.toLowerCase()) || b.key.includes(badgeQ.toLowerCase()));
+
+
+
 
   return (
     <div className="min-h-screen">
@@ -234,6 +300,10 @@ function AdminPanel() {
           <Link to="/" className="font-mono font-bold text-aurora">aurora.lol</Link>
           <span className="rounded-full px-2.5 py-0.5 text-[10px] font-mono border border-primary/60 text-primary">ADMIN</span>
           <div className="ml-auto flex items-center gap-2">
+            {busy && <span className="text-xs font-mono text-muted-foreground">{busy}</span>}
+            <button onClick={exportCsv} className="glass-strong px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5">
+              <Download className="w-3.5 h-3.5" /> Export CSV
+            </button>
             <button onClick={load} className="glass-strong px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5">
               <RefreshCw className="w-3.5 h-3.5" /> Refresh
             </button>
@@ -241,6 +311,7 @@ function AdminPanel() {
               <LogOut className="w-3.5 h-3.5" /> Sign out
             </button>
           </div>
+
         </div>
       </header>
 
@@ -276,12 +347,31 @@ function AdminPanel() {
               <span className="ml-auto self-center font-mono text-muted-foreground">{filtered.length} shown</span>
             </div>
 
+            <div className="flex flex-wrap items-center gap-1.5 mb-4 text-[11px]">
+              <button onClick={() => setSel(filtered.map(r => r.id))} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground flex items-center gap-1.5">
+                <Users className="w-3 h-3" /> Select all shown
+              </button>
+              <button onClick={() => setSel([])} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Clear</button>
+              {sel.length > 0 && (
+                <>
+                  <span className="font-mono text-primary px-1">{sel.length} selected</span>
+                  <button onClick={() => bulkBan(true)} className="rounded-md px-2.5 py-1.5 border border-destructive/40 text-destructive">Ban</button>
+                  <button onClick={() => bulkBan(false)} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Unban</button>
+                  <button onClick={() => bulkBadge(true)} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Grant badge</button>
+                  <button onClick={() => bulkBadge(false)} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Revoke badge</button>
+                  <button onClick={bulkResetViews} className="rounded-md px-2.5 py-1.5 border border-border text-muted-foreground">Reset views</button>
+                </>
+              )}
+            </div>
+
             {loading ? (
               <p className="font-mono text-sm text-muted-foreground">loading profiles...</p>
             ) : (
               <ul className="divide-y divide-border/40 max-h-[560px] overflow-auto">
                 {filtered.map(r => (
                   <li key={r.id} className="py-2.5 flex items-center gap-3">
+                    <input type="checkbox" checked={sel.includes(r.id)} onChange={() => toggleSel(r.id)}
+                           aria-label={`Select @${r.username}`} className="accent-primary w-3.5 h-3.5" />
                     <button onClick={() => pick(r)} className="min-w-0 flex-1 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium truncate">{r.display_name || r.username}</span>
@@ -290,6 +380,10 @@ function AdminPanel() {
                       <div className="text-[11px] font-mono text-muted-foreground truncate">
                         @{r.username} · {r.view_count} views
                       </div>
+                    </button>
+                    <button onClick={() => copyLink(r)} title="Copy profile link"
+                            className="p-2 rounded-md hover:bg-muted/40 text-muted-foreground">
+                      <Copy className="w-3.5 h-3.5" />
                     </button>
                     <a href={`/${r.username}`} target="_blank" rel="noreferrer" aria-label={`Open @${r.username}`}
                        className="p-2 rounded-md hover:bg-muted/40 text-muted-foreground">
@@ -302,6 +396,7 @@ function AdminPanel() {
                   </li>
                 ))}
                 {filtered.length === 0 && <li className="py-3 text-sm text-muted-foreground">No profiles match.</li>}
+
               </ul>
             )}
           </section>
@@ -376,8 +471,12 @@ function AdminPanel() {
                     <button onClick={() => grantAll(true)} className="ml-auto text-[11px] text-muted-foreground hover:text-foreground">grant all</button>
                     <button onClick={() => grantAll(false)} className="text-[11px] text-muted-foreground hover:text-foreground">revoke all</button>
                   </div>
+                  <input value={badgeQ} onChange={e => setBadgeQ(e.target.value)} placeholder="Filter badges"
+                         aria-label="Filter badges"
+                         className="w-full mb-2 bg-input rounded-md px-3 py-1.5 text-xs border border-border" />
                   <div className="grid grid-cols-2 gap-1.5 max-h-[420px] overflow-auto pr-1">
-                    {badges.map(b => {
+                    {shownBadges.map(b => {
+
                       const Icon = badgeIcon(b.icon);
                       const has = owned.includes(b.key);
                       return (

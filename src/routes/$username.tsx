@@ -302,15 +302,22 @@ function ProfilePage() {
                     {badges.map(b => {
                       const Icon = badgeIcon(b.icon);
                       return (
-                        <span key={b.key} title={`${b.name} — ${b.description}`} aria-label={b.name}
-                              className="grid place-items-center rounded-full w-[26px] h-[26px]"
+                        <span key={b.key} aria-label={b.name} tabIndex={0}
+                              className="group relative grid place-items-center rounded-full w-[26px] h-[26px] outline-none transition-transform duration-200 ease-out hover:scale-[1.35] focus-visible:scale-[1.35] hover:z-20"
                               style={{ ...tierRing(b.tier, b.color), background: `${b.color}1a`, color: b.color }}>
                           <Icon className="w-3.5 h-3.5" />
+                          <span role="tooltip"
+                                className="pointer-events-none absolute bottom-full left-1/2 mb-2 w-max max-w-[210px] -translate-x-1/2 translate-y-1 scale-95 rounded-lg px-2.5 py-1.5 text-left opacity-0 transition-all duration-150 ease-out group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:scale-100 group-focus-visible:opacity-100"
+                                style={{ background: "oklch(0.14 0.02 280 / 0.96)", border: "1px solid oklch(1 0 0 / 0.1)", boxShadow: "0 10px 30px -12px oklch(0 0 0 / 0.8)" }}>
+                            <span className="block text-[11px] font-medium text-foreground whitespace-nowrap">{b.name}</span>
+                            <span className="block text-[10px] leading-snug text-muted-foreground whitespace-normal">{b.description}</span>
+                          </span>
                         </span>
                       );
                     })}
                   </span>
                 )}
+
               </div>
 
               <div className="mt-1 text-muted-foreground">@{profile.username}</div>
