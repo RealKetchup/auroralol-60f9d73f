@@ -1,277 +1,145 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from '@tanstack/react-router';
-
-// ─── Particles ───
-const Particles: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let w = 0, h = 0;
-    const particles: Array<{ x: number; y: number; vx: number; vy: number; size: number }> = [];
-    const COUNT = 80;
-
-    const resize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-    resize();
-
-    for (let i = 0; i < COUNT; i++) {
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.2,
-        vy: (Math.random() - 0.5) * 0.2,
-        size: Math.random() * 1.5 + 0.5,
-      });
-    }
-
-    let animationId: number;
-    const draw = () => {
-      ctx.clearRect(0, 0, w, h);
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0 || p.x > w) p.vx *= -1;
-        if (p.y < 0 || p.y > h) p.vy *= -1;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.12)';
-        ctx.fill();
-      }
-      animationId = requestAnimationFrame(draw);
-    };
-    draw();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationId);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />;
-};
 
 export const Maintenance: React.FC = () => {
-  const cardRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [isMuted, setIsMuted] = useState<boolean>(false); // default unmuted
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
 
-  // ─── Mouse parallax ───
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!cardRef.current) return;
-      const rect = cardRef.current.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const x = (e.clientX - cx) / rect.width;
-      const y = (e.clientY - cy) / rect.height;
-      setRotateX(-y * 6);
-      setRotateY(x * 6);
-    };
-    const handleMouseLeave = () => {
-      setRotateX(0);
-      setRotateY(0);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', handleMouseLeave);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, []);
-
-  // ─── Audio logic ───
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    audio.volume = 0.3;
+    audio.volume = 0.25;
     audio.loop = true;
+    audio.play().catch(() => setIsMuted(true));
 
-    // Attempt to play immediately (unmuted)
-    const playPromise = audio.play();
-
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        // Autoplay was blocked – set muted state to true
-        setIsMuted(true);
-      });
-    }
-
-    // One‑time interaction listener to unmute if needed
-    const handleInteraction = () => {
-      if (isMuted) {
-        audio.play().catch(() => {});
-        setIsMuted(false);
+    const onInteract = () => {
+      if (audio.paused) {
+        audio.play().then(() => setIsMuted(false)).catch(() => {});
       }
-      setHasInteracted(true);
-      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('click', onInteract);
     };
-
-    document.addEventListener('click', handleInteraction);
-    return () => document.removeEventListener('click', handleInteraction);
+    document.addEventListener('click', onInteract);
+    return () => document.removeEventListener('click', onInteract);
   }, []);
 
   const toggleMute = () => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    if (isMuted) {
-      audio.volume = 0.3;
-      audio.play().catch(err => console.warn('Audio play failed:', err));
-      setIsMuted(false);
+    if (audio.paused) {
+      audio.play().then(() => setIsMuted(false)).catch(() => {});
     } else {
       audio.pause();
       setIsMuted(true);
     }
   };
 
-  // ─── Refresh on link click ───
-  const handleRefreshLink = (e: React.MouseEvent<HTMLAnchorElement>, to: string) => {
-    e.preventDefault();
-    window.location.href = to;
-  };
-
   return (
     <>
       <style>{`
-        @keyframes auroraShift {
-          0% { background-position: 0% 50%; }
-          100% { background-position: 100% 50%; }
+        @keyframes mDrift {
+          0%   { transform: translate3d(0,0,0) scale(1); }
+          100% { transform: translate3d(6%, -6%, 0) scale(1.12); }
         }
-        @keyframes auroraFloat1 {
-          0% { transform: translate(0,0) scale(1); }
-          100% { transform: translate(80px,-60px) scale(1.15); }
+        @keyframes mRise {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes auroraFloat2 {
-          0% { transform: translate(0,0) scale(1); }
-          100% { transform: translate(-70px,50px) scale(1.2); }
+        @keyframes mSweep {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(320%); }
         }
-        @keyframes auroraFloat3 {
-          0% { transform: translate(-50%,-50%) scale(1); }
-          100% { transform: translate(-50%,-50%) translate(40px,-30px) scale(1.1); }
-        }
-        @keyframes auroraFloat4 {
-          0% { transform: translate(0,0) scale(1); }
-          100% { transform: translate(-50px,40px) scale(1.25); }
-        }
-        @keyframes fadeUp {
-          0% { opacity: 0; transform: translateY(30px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .aurora-text {
-          background: linear-gradient(90deg, #8b5cf6, #22d3ee, #f472b6, #8b5cf6);
-          background-size: 300% 100%;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: auroraShift 6s ease-in-out infinite alternate;
-        }
-        .btn-aurora {
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(4px);
-          border: 1px solid rgba(139,92,246,0.3);
-          transition: all 0.25s ease;
-        }
-        .btn-aurora:hover {
-          background: rgba(255,255,255,0.08);
-          border-color: rgba(34,211,238,0.5);
-          box-shadow: 0 0 30px rgba(139,92,246,0.15);
-          transform: scale(1.03);
-        }
-        .badge-aurora {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(139,92,246,0.2);
-        }
-        .card-enter {
-          animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-        .card-3d {
-          transition: transform 0.1s ease-out;
-          transform-style: preserve-3d;
-        }
+        .m-rise { animation: mRise .7s cubic-bezier(.22,1,.36,1) both; }
       `}</style>
 
-      <div className="min-h-screen w-full bg-[#09090B] flex items-center justify-center px-6 relative overflow-hidden">
-        <div className="fixed inset-0 z-0 overflow-hidden">
-          <div className="absolute w-[700px] h-[700px] rounded-full bg-purple-500/25 blur-[140px] -top-[100px] -left-[100px] animate-[auroraFloat1_16s_ease-in-out_infinite_alternate]" />
-          <div className="absolute w-[600px] h-[600px] rounded-full bg-cyan-400/25 blur-[140px] -bottom-[100px] -right-[100px] animate-[auroraFloat2_20s_ease-in-out_infinite_alternate]" />
-          <div className="absolute w-[500px] h-[500px] rounded-full bg-pink-500/25 blur-[140px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-[auroraFloat3_24s_ease-in-out_infinite_alternate]" />
-          <div className="absolute w-[400px] h-[400px] rounded-full bg-amber-400/25 blur-[140px] top-[20%] right-[10%] animate-[auroraFloat4_18s_ease-in-out_infinite_alternate]" />
+      <main className="relative min-h-screen w-full overflow-hidden bg-[#0A0A0C] text-white flex items-center justify-center px-6">
+        {/* soft aurora wash */}
+        <div className="pointer-events-none absolute inset-0">
+          <div
+            className="absolute -top-40 -left-32 h-[560px] w-[560px] rounded-full blur-[160px]"
+            style={{ background: 'rgba(139,92,246,0.20)', animation: 'mDrift 26s ease-in-out infinite alternate' }}
+          />
+          <div
+            className="absolute -bottom-48 -right-24 h-[520px] w-[520px] rounded-full blur-[170px]"
+            style={{ background: 'rgba(88,60,190,0.18)', animation: 'mDrift 34s ease-in-out infinite alternate-reverse' }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.35]"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)',
+              backgroundSize: '64px 64px',
+              maskImage: 'radial-gradient(ellipse at center, black 20%, transparent 72%)',
+              WebkitMaskImage: 'radial-gradient(ellipse at center, black 20%, transparent 72%)',
+            }}
+          />
         </div>
 
-        <Particles />
+        <section className="m-rise relative z-10 w-full max-w-xl">
+          <div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] p-9 sm:p-12 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)] backdrop-blur-xl">
+            <header className="flex items-center justify-between">
+              <span className="font-mono text-sm tracking-tight text-white/80">aurora.lol</span>
+              <button
+                onClick={toggleMute}
+                aria-label={isMuted ? 'Play music' : 'Pause music'}
+                className="rounded-full border border-white/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white/45 transition-colors hover:border-white/25 hover:text-white/80"
+              >
+                {isMuted ? 'sound off' : 'sound on'}
+              </button>
+            </header>
 
-        <div
-          ref={cardRef}
-          className="card-enter card-3d relative z-10 w-full max-w-lg bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] p-10 shadow-2xl shadow-black/30"
-          style={{ transform: `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` }}
-        >
-          {/* Audio toggle */}
-          <div className="absolute top-4 right-4">
-            <button
-              onClick={toggleMute}
-              className="text-white/30 hover:text-white/60 transition-colors text-xl"
-              aria-label={isMuted ? 'Unmute music' : 'Mute music'}
-            >
-              {isMuted ? '🔇' : '🔊'}
-            </button>
+            <div className="mt-10 flex items-center gap-2.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400/70" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-violet-400" />
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
+                Scheduled maintenance
+              </span>
+            </div>
+
+            <h1 className="mt-5 text-[2.5rem] leading-[1.08] font-semibold tracking-tight sm:text-5xl">
+              We&apos;re making things
+              <br />
+              <span className="text-violet-300">a little better.</span>
+            </h1>
+
+            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-white/50">
+              Profiles are briefly offline while we ship an update. Nothing is lost — everything
+              will be exactly where you left it.
+            </p>
+
+            {/* indeterminate progress */}
+            <div className="mt-9 h-px w-full overflow-hidden bg-white/10">
+              <div
+                className="h-px w-1/3 bg-gradient-to-r from-transparent via-violet-400 to-transparent"
+                style={{ animation: 'mSweep 2.4s linear infinite' }}
+              />
+            </div>
+
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <a
+                href="/status"
+                className="rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-opacity hover:opacity-85"
+              >
+                Status page
+              </a>
+              <a
+                href="https://discord.gg/wyz2Zk4xmH"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-white/12 px-5 py-2.5 text-sm font-medium text-white/75 transition-colors hover:border-white/30 hover:text-white"
+              >
+                Discord
+              </a>
+            </div>
+
+            <footer className="mt-10 border-t border-white/[0.06] pt-5 font-mono text-[11px] text-white/25">
+              © 2026 aurora.lol
+            </footer>
           </div>
-
-          <div className="flex justify-center mb-6">
-            <span className="aurora-text text-3xl font-bold">Aurora.lol</span>
-          </div>
-
-          <div className="flex justify-center mb-8">
-            <span className="badge-aurora px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider text-white/70">
-              Maintenance in progress
-            </span>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight leading-[1.15] text-white">
-            We'll be back soon.
-          </h1>
-
-          <p className="mt-4 text-center text-white/60 text-base md:text-lg max-w-sm mx-auto leading-relaxed">
-            We're currently upgrading Aurora to make everything faster, smoother and more reliable. Thanks for your patience—we'll be online again shortly.
-          </p>
-
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a
-              href="https://discord.gg/wyz2Zk4xmH"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => handleRefreshLink(e, 'https://discord.gg/wyz2Zk4xmH')}
-              className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
-            >
-              Discord
-            </a>
-            <Link
-              to="/status"
-              onClick={() => { window.location.href = '/status'; }}
-              className="btn-aurora rounded-full px-6 py-3 text-sm font-medium text-white/80 transition-all"
-            >
-              Status Page
-            </Link>
-          </div>
-
-          <div className="mt-10 text-center text-white/30 text-sm border-t border-white/5 pt-6">
-            © 2026 <span className="aurora-text">Aurora.lol</span>
-          </div>
-        </div>
+        </section>
 
         <audio ref={audioRef} src="/music.mp3" loop />
-      </div>
+      </main>
     </>
   );
 };
