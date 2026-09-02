@@ -57,8 +57,69 @@ export const BADGE_ICONS: Record<string, LucideIcon> = {
   badgecheck: BadgeCheck,
 };
 
-export function badgeIcon(name: string): LucideIcon {
-  return BADGE_ICONS[name] ?? Star;
+const ICON_ALIASES: Record<string, string> = {
+  book: "bookopen",
+  bookmark: "bookopen",
+  picture: "image",
+  photo: "image",
+  avatar: "image",
+  song: "music",
+  audio: "music",
+  headphones: "music",
+  chain: "link",
+  links: "link",
+  discord: "messagecircle",
+  message: "messagecircle",
+  chat: "messagecircle",
+  roblox: "gamepad",
+  gamepad2: "gamepad",
+  game: "gamepad",
+  controller: "gamepad",
+  color: "palette",
+  colors: "palette",
+  font: "type",
+  text: "type",
+  wand2: "wand",
+  magic: "wand",
+  aurora: "wand",
+  pen: "pentool",
+  background: "wallpaper",
+  panel: "layout",
+  cursor: "mousepointer",
+  mousepointer2: "mousepointer",
+  trail: "wind",
+  trending: "trendingup",
+  fire: "flame",
+  views: "trendingup",
+  guestbook: "messagesquare",
+  love: "heart",
+  diamond: "gem",
+  award: "medal",
+  rating: "medal",
+  cup: "trophy",
+  verified: "badgecheck",
+  admin: "shield",
+  staff: "shield",
+  owner: "crown",
+  king: "crown",
+  time: "clock",
+  early: "clock",
+  og: "clock",
+  done: "check",
+  complete: "check",
+  write: "pencil",
+  edit: "pencil",
+  sparkle: "sparkles",
+  new: "sparkles",
+  refresh: "rotate",
+  people: "users",
+  profile: "user",
+  bolt: "zap",
+};
+
+export function badgeIcon(name?: string | null): LucideIcon {
+  const key = (name ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  return BADGE_ICONS[key] ?? BADGE_ICONS[ICON_ALIASES[key] ?? ""] ?? Star;
 }
 
 export const TIER_LABEL: Record<string, string> = {
