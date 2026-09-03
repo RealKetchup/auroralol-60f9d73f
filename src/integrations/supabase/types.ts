@@ -128,9 +128,12 @@ export type Database = {
           click_effect_style: string
           created_at: string
           cursor_trail: boolean
+          custom_code_enabled: boolean
+          custom_css: string | null
           custom_cursor: boolean | null
           custom_font_name: string | null
           custom_font_url: string | null
+          custom_html: string | null
           discord_id: string | null
           display_name: string | null
           entry_animation: string
@@ -141,6 +144,7 @@ export type Database = {
           music_url: string | null
           panel_background_opacity: number
           panel_background_url: string | null
+          panels: Json
           profile_style: string
           roblox_avatar_url: string | null
           roblox_url: string | null
@@ -171,9 +175,12 @@ export type Database = {
           click_effect_style?: string
           created_at?: string
           cursor_trail?: boolean
+          custom_code_enabled?: boolean
+          custom_css?: string | null
           custom_cursor?: boolean | null
           custom_font_name?: string | null
           custom_font_url?: string | null
+          custom_html?: string | null
           discord_id?: string | null
           display_name?: string | null
           entry_animation?: string
@@ -184,6 +191,7 @@ export type Database = {
           music_url?: string | null
           panel_background_opacity?: number
           panel_background_url?: string | null
+          panels?: Json
           profile_style?: string
           roblox_avatar_url?: string | null
           roblox_url?: string | null
@@ -214,9 +222,12 @@ export type Database = {
           click_effect_style?: string
           created_at?: string
           cursor_trail?: boolean
+          custom_code_enabled?: boolean
+          custom_css?: string | null
           custom_cursor?: boolean | null
           custom_font_name?: string | null
           custom_font_url?: string | null
+          custom_html?: string | null
           discord_id?: string | null
           display_name?: string | null
           entry_animation?: string
@@ -227,6 +238,7 @@ export type Database = {
           music_url?: string | null
           panel_background_opacity?: number
           panel_background_url?: string | null
+          panels?: Json
           profile_style?: string
           roblox_avatar_url?: string | null
           roblox_url?: string | null
