@@ -368,96 +368,24 @@ function ProfilePage() {
 
         </section>
 
-        {/* Grid */}
-        <div className="grid gap-6 lg:grid-cols-[1.85fr_1fr] items-start">
-          <Panel id="guestbook" profile={profile} accent={accent} green={green}
-                 title="Guestbook" icon={<BookOpen className="w-4 h-4" />} titleColor={accent}
-                 right={<span className="text-xs text-muted-foreground">{reviews.length} entries</span>}>
-            <Guestbook profileId={profile.id} isOwner={isOwner} />
-          </Panel>
-
-          <div className="space-y-6">
-            {profile.bio && (
-              <Panel profile={profile} accent={accent} green={green} title="About" icon={<UserIcon className="w-4 h-4" />} titleColor={accent}>
-                <p className="px-5 pb-5 text-sm opacity-90 whitespace-pre-wrap">{profile.bio}</p>
-              </Panel>
-            )}
-
-            <Panel id="reviews" profile={profile} accent={accent} green={green} title="Reviews" icon={<Star className="w-4 h-4" />} titleColor={green}>
-              <div className="px-5 pb-5 flex items-end justify-between gap-4">
-                <div>
-                  <div className="text-3xl font-bold flex items-center gap-1">
-                    {rated.length ? avgRating.toFixed(1) : "—"}
-                    <Star className="w-4 h-4" style={{ color: green }} fill={green} />
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">{rated.length} review{rated.length === 1 ? "" : "s"}</div>
-                </div>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map(n => (
-                    <Star key={n} className="w-4 h-4" style={{ color: green, opacity: n <= Math.round(avgRating) ? 1 : 0.25 }}
-                          fill={n <= Math.round(avgRating) ? green : "none"} />
-                  ))}
-                </div>
+        {/* Panels — layout comes from the owner's editor */}
+        <div className="grid grid-cols-12 gap-6 items-start">
+          {panelList.filter(p => !p.hidden).map(p => {
+            const title = p.title || PANEL_LABELS[p.type];
+            const body = renderPanelBody(p);
+            if (!body) return null;
+            return (
+              <div key={p.id} className="panel-cell col-span-12" style={{ ["--pw" as never]: p.w }}>
+                <Panel id={panelAnchor(p.type)} profile={profile} accent={accent} green={green}
+                       title={title} icon={PANEL_ICONS[p.type]} titleColor={p.type === "reviews" ? green : accent}
+                       minHeight={p.h || undefined}>
+                  {body}
+                </Panel>
               </div>
-            </Panel>
-
-            {profile.discord_id && (
-              <Panel profile={profile} accent={accent} green={green} title="Discord" icon={<Sparkles className="w-4 h-4" />} titleColor={accent}>
-                <div className="px-3 pb-3"><LanyardCard discordId={profile.discord_id} /></div>
-              </Panel>
-            )}
-
-            <Panel profile={profile} accent={accent} green={green} title="Recent Guests" icon={<Users className="w-4 h-4" />} titleColor={accent}>
-              <ul className="px-5 pb-5 space-y-3">
-                {reviews.slice(0, 4).map(r => (
-                  <li key={r.id} className="flex items-center gap-3 text-sm">
-                    <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold shrink-0"
-                          style={{ background: `${accent}22`, color: accent }}>
-                      {(r.author_name || "?")[0].toUpperCase()}
-                    </span>
-                    <span className="truncate">{r.author_name}</span>
-                    <span className="ml-auto text-[11px] text-muted-foreground shrink-0">
-                      {new Date(r.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                    </span>
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: green, boxShadow: `0 0 6px ${green}` }} />
-                  </li>
-                ))}
-                {reviews.length === 0 && <li className="text-sm text-muted-foreground opacity-70">No guests yet ✦</li>}
-                {reviews.length > 4 && (
-                  <li>
-                    <button onClick={() => document.getElementById("guestbook")?.scrollIntoView({ behavior: "smooth" })}
-                            className="w-full rounded-lg py-2 text-sm transition-colors"
-                            style={{ border: `1px solid ${accent}44`, background: `${accent}12` }}>
-                      View All Guests
-                    </button>
-                  </li>
-                )}
-              </ul>
-            </Panel>
-
-            {links.length > 0 && (
-              <Panel id="links" profile={profile} accent={accent} green={green} title="Links" icon={<Link2 className="w-4 h-4" />} titleColor={accent}>
-                <div className="px-4 pb-4 grid gap-2">
-                  {links.map((l: Lnk) => {
-                    const kind = detectIcon(l.url);
-                    const color = ICON_COLOR[kind];
-                    return (
-                      <a key={l.id} href={l.url} target="_blank" rel="noreferrer"
-                         className="flex items-center gap-3 rounded-xl px-3 py-2.5 border border-foreground/[0.07] bg-foreground/[0.03] hover:bg-foreground/[0.07] transition-colors duration-200 group">
-                        <span className="flex items-center justify-center w-8 h-8 rounded-md shrink-0"
-                              style={{ background: `${color}1f`, color }}>
-                          <IconFor kind={kind} className="w-4 h-4" />
-                        </span>
-                        <span className="truncate font-medium">{l.label}</span>
-                        <span className="ml-auto opacity-30 group-hover:opacity-80 transition-opacity">→</span>
-                      </a>
-                    );
-                  })}
-                </div>
-              </Panel>
-            )}
-          </div>
+            );
+          })}
         </div>
+
 
         <footer className="text-center text-xs text-muted-foreground py-8">
           © {new Date().getFullYear()} <Link to="/" className="hover:text-foreground">aurora.lol</Link> ✦
