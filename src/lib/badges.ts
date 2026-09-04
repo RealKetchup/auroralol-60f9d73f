@@ -57,7 +57,22 @@ export const BADGE_ICONS: Record<string, LucideIcon> = {
   trophy: Trophy,
   medal: Medal,
   badgecheck: BadgeCheck,
+  moon: Moon,
+  film: Film,
+  droplet: Droplet,
+  rocket: Rocket,
+  grid: LayoutGrid,
+  terminal: Terminal,
+  eye: Eye,
+  box: Box,
+  compass: Compass,
+  code: Code2,
+  brush: Brush,
+  cpu: Cpu,
+  key: Key,
+  target: Target,
 };
+
 
 const ICON_ALIASES: Record<string, string> = {
   book: "bookopen",
