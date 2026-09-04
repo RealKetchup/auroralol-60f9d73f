@@ -3,8 +3,10 @@ import {
   MessageCircle, Gamepad2, Palette, Type, Wand2, Square, Zap, MousePointer2, RotateCw,
   LayoutPanelTop, TrendingUp, Flame, Crown, MessageSquare, Heart, Star, Pencil, Check,
   Shield, Clock, PenTool, Wallpaper, Wind, Gem, Trophy, Medal, BadgeCheck,
+  Moon, Film, Droplet, Rocket, LayoutGrid, Terminal, Eye, Box, Compass, Code2, Brush, Cpu, Key, Target,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+
 
 export type Badge = {
   key: string;
