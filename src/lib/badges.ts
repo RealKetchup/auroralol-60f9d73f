@@ -3,8 +3,10 @@ import {
   MessageCircle, Gamepad2, Palette, Type, Wand2, Square, Zap, MousePointer2, RotateCw,
   LayoutPanelTop, TrendingUp, Flame, Crown, MessageSquare, Heart, Star, Pencil, Check,
   Shield, Clock, PenTool, Wallpaper, Wind, Gem, Trophy, Medal, BadgeCheck,
+  Moon, Film, Droplet, Rocket, LayoutGrid, Terminal, Eye, Box, Compass, Code2, Brush, Cpu, Key, Target,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+
 
 export type Badge = {
   key: string;
@@ -55,7 +57,22 @@ export const BADGE_ICONS: Record<string, LucideIcon> = {
   trophy: Trophy,
   medal: Medal,
   badgecheck: BadgeCheck,
+  moon: Moon,
+  film: Film,
+  droplet: Droplet,
+  rocket: Rocket,
+  grid: LayoutGrid,
+  terminal: Terminal,
+  eye: Eye,
+  box: Box,
+  compass: Compass,
+  code: Code2,
+  brush: Brush,
+  cpu: Cpu,
+  key: Key,
+  target: Target,
 };
+
 
 const ICON_ALIASES: Record<string, string> = {
   book: "bookopen",
