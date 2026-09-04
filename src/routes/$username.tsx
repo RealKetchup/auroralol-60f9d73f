@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Crown, Pencil, Link2, Calendar, Star, Users, MessageSquare, BookOpen, User as UserIcon, Sparkles } from "lucide-react";
+import { Crown, Pencil, Link2, Calendar, Star, Users, MessageSquare, BookOpen, User as UserIcon, Sparkles, Music, LayoutPanelTop } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveStorageUrl } from "@/lib/storage";
 import { MusicPlayer } from "@/components/profile/MusicPlayer";
@@ -12,6 +12,19 @@ import { Guestbook } from "@/components/profile/Guestbook";
 import { detectIcon, IconFor, ICON_COLOR } from "@/lib/link-icons";
 import { fontStackFor, useRemoteFont } from "@/lib/fonts";
 import { badgeIcon, tierRing, type Badge, type UserBadge } from "@/lib/badges";
+import { normalizePanels, sanitizeCss, sanitizeHtml, PANEL_LABELS, type PanelConfig, type PanelType } from "@/lib/panels";
+
+const PANEL_ICONS: Record<PanelType, React.ReactNode> = {
+  about: <UserIcon className="w-4 h-4" />,
+  guestbook: <BookOpen className="w-4 h-4" />,
+  reviews: <Star className="w-4 h-4" />,
+  discord: <Sparkles className="w-4 h-4" />,
+  guests: <Users className="w-4 h-4" />,
+  links: <Link2 className="w-4 h-4" />,
+  music: <Music className="w-4 h-4" />,
+  custom: <LayoutPanelTop className="w-4 h-4" />,
+};
+
 
 type Profile = {
   id: string;
