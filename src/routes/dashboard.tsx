@@ -63,7 +63,12 @@ type Profile = {
   roblox_avatar_url: string | null;
   aurora_preset: string;
   aurora_intensity: number;
+  panels: unknown;
+  custom_html: string | null;
+  custom_css: string | null;
+  custom_code_enabled: boolean;
 };
+
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
 
 
