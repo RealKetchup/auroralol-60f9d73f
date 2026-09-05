@@ -331,6 +331,8 @@ function ProfilePage() {
       {profile.click_effect && <ClickEffect color={accent} style={profile.click_effect_style} />}
       {profile.custom_cursor && <CustomCursor accent={accent} secondary={green} />}
       {profile.cursor_trail && <CursorTrail color={accent} />}
+      {customCss && <style>{`#aurora-custom-scope{display:contents}\n${customCss}`}</style>}
+
 
       {/* Nav */}
       <header className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: "oklch(0.12 0.03 280 / 0.72)" }}>
