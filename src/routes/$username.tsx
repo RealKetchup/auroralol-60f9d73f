@@ -501,7 +501,12 @@ function ProfilePage() {
                        minHeight={p.h || undefined}>
                   {body}
                 </Panel>
-              </div>
+        </div>
+
+        {customHtml && (
+          <div id="aurora-custom-scope" className="aurora-custom" dangerouslySetInnerHTML={{ __html: customHtml }} />
+        )}
+
             );
           })}
         </div>
