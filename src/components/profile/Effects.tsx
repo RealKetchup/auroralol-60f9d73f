@@ -110,7 +110,11 @@ export function CustomCursor({ accent, secondary }: { accent: string; secondary:
       window.removeEventListener("mousemove", move);
       if (raf) cancelAnimationFrame(raf);
       cursor.remove();
+      document.documentElement.classList.remove("aurora-no-cursor");
+      document.documentElement.style.cursor = prevCursor;
+      hideStyle.remove();
     };
+
   }, [accent, secondary]);
   return null;
 }
