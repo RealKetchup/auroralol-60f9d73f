@@ -81,6 +81,14 @@ export function CustomCursor({ accent, secondary }: { accent: string; secondary:
       contain: layout style paint;
     `;
     document.body.appendChild(cursor);
+    const prevCursor = document.documentElement.style.cursor;
+    document.documentElement.style.cursor = "none";
+    const hideStyle = document.createElement("style");
+    hideStyle.textContent = "html.aurora-no-cursor, html.aurora-no-cursor * { cursor: none !important; }";
+    document.head.appendChild(hideStyle);
+    document.documentElement.classList.add("aurora-no-cursor");
+
+
 
     let x = 0, y = 0, raf = 0, dirty = false;
     const paint = () => {
