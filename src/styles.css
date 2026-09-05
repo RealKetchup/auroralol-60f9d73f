@@ -235,3 +235,13 @@
   background-image: var(--grad-aurora);
   background-origin: border-box;
 }
+
+/* Owner-editable panel grid: full width on phones, custom span from md up. */
+@media (min-width: 768px) {
+  .panel-cell { grid-column: span var(--pw, 12) / span var(--pw, 12); }
+}
+.aurora-custom :is(h1, h2, h3) { font-weight: 600; letter-spacing: -0.01em; margin: 0.4em 0; }
+.aurora-custom p { margin: 0.5em 0; }
+.aurora-custom a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+.aurora-custom img, .aurora-custom video { max-width: 100%; height: auto; border-radius: 0.75rem; }
+.aurora-custom ul, .aurora-custom ol { padding-left: 1.25rem; list-style: revert; margin: 0.5em 0; }
