@@ -65,8 +65,13 @@ type Profile = {
   aurora_preset: string;
   aurora_intensity: number;
   view_count: number;
+  panels: unknown;
+  custom_html: string | null;
+  custom_css: string | null;
+  custom_code_enabled: boolean;
   created_at: string;
 };
+
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
 
 export const Route = createFileRoute("/$username")({
