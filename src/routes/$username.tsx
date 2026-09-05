@@ -555,9 +555,9 @@ function Avatar({ url, name, shape, accent, green, size }: {
   );
 }
 
-function Panel({ id, title, icon, titleColor, right, profile, accent, children }: {
+function Panel({ id, title, icon, titleColor, right, profile, accent, minHeight, children }: {
   id?: string; title: string; icon?: React.ReactNode; titleColor?: string; right?: React.ReactNode;
-  profile: Profile; accent: string; green: string; children: React.ReactNode;
+  profile: Profile; accent: string; green: string; minHeight?: number; children: React.ReactNode;
 }) {
   return (
     <section id={id}
@@ -566,10 +566,12 @@ function Panel({ id, title, icon, titleColor, right, profile, accent, children }
                border: `1px solid oklch(1 0 0 / 0.07)`,
                background: `oklch(0.15 0.02 280 / ${clamp(profile.card_opacity)})`,
                backdropFilter: `blur(${profile.card_blur}px)`,
+               minHeight,
                boxShadow: profile.border_glow
                  ? `0 24px 60px -34px oklch(0 0 0 / 0.9), 0 0 0 1px ${accent}1a inset`
                  : "0 20px 50px -34px oklch(0 0 0 / 0.85)",
              }}>
+
       <div className="flex items-center gap-2 px-5 pt-5 pb-3">
         <span className="opacity-90" style={{ color: titleColor || accent }}>{icon}</span>
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-foreground/85">{title}</h2>
