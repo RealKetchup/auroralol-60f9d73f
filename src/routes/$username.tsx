@@ -65,8 +65,13 @@ type Profile = {
   aurora_preset: string;
   aurora_intensity: number;
   view_count: number;
+  panels: unknown;
+  custom_html: string | null;
+  custom_css: string | null;
+  custom_code_enabled: boolean;
   created_at: string;
 };
+
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
 
 export const Route = createFileRoute("/$username")({
@@ -326,6 +331,8 @@ function ProfilePage() {
       {profile.click_effect && <ClickEffect color={accent} style={profile.click_effect_style} />}
       {profile.custom_cursor && <CustomCursor accent={accent} secondary={green} />}
       {profile.cursor_trail && <CursorTrail color={accent} />}
+      {customCss && <style>{`#aurora-custom-scope{display:contents}\n${customCss}`}</style>}
+
 
       {/* Nav */}
       <header className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: "oklch(0.12 0.03 280 / 0.72)" }}>
@@ -499,6 +506,11 @@ function ProfilePage() {
           })}
         </div>
 
+        {customHtml && (
+          <div id="aurora-custom-scope" className="aurora-custom" dangerouslySetInnerHTML={{ __html: customHtml }} />
+        )}
+
+
 
         <footer className="text-center text-xs text-muted-foreground py-8">
           © {new Date().getFullYear()} <Link to="/" className="hover:text-foreground">aurora.lol</Link> ✦
@@ -555,9 +567,9 @@ function Avatar({ url, name, shape, accent, green, size }: {
   );
 }
 
-function Panel({ id, title, icon, titleColor, right, profile, accent, children }: {
+function Panel({ id, title, icon, titleColor, right, profile, accent, minHeight, children }: {
   id?: string; title: string; icon?: React.ReactNode; titleColor?: string; right?: React.ReactNode;
-  profile: Profile; accent: string; green: string; children: React.ReactNode;
+  profile: Profile; accent: string; green: string; minHeight?: number; children: React.ReactNode;
 }) {
   return (
     <section id={id}
@@ -566,10 +578,12 @@ function Panel({ id, title, icon, titleColor, right, profile, accent, children }
                border: `1px solid oklch(1 0 0 / 0.07)`,
                background: `oklch(0.15 0.02 280 / ${clamp(profile.card_opacity)})`,
                backdropFilter: `blur(${profile.card_blur}px)`,
+               minHeight,
                boxShadow: profile.border_glow
                  ? `0 24px 60px -34px oklch(0 0 0 / 0.9), 0 0 0 1px ${accent}1a inset`
                  : "0 20px 50px -34px oklch(0 0 0 / 0.85)",
              }}>
+
       <div className="flex items-center gap-2 px-5 pt-5 pb-3">
         <span className="opacity-90" style={{ color: titleColor || accent }}>{icon}</span>
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-foreground/85">{title}</h2>

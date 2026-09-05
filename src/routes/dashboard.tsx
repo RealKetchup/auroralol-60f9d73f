@@ -9,6 +9,8 @@ import { FONT_PRESETS } from "@/lib/fonts";
 import { getRobloxAvatar } from "@/lib/roblox.functions";
 import { Plus, Trash2, LogOut, ExternalLink, Upload } from "lucide-react";
 import { badgeIcon, tierRing, TIER_LABEL, type Badge } from "@/lib/badges";
+import { PanelEditor } from "@/components/profile/PanelEditor";
+import { normalizePanels } from "@/lib/panels";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -63,7 +65,12 @@ type Profile = {
   roblox_avatar_url: string | null;
   aurora_preset: string;
   aurora_intensity: number;
+  panels: unknown;
+  custom_html: string | null;
+  custom_css: string | null;
+  custom_code_enabled: boolean;
 };
+
 type Lnk = { id: string; label: string; url: string; icon: string | null; position: number };
 
 
@@ -211,6 +218,10 @@ function Dashboard() {
       roblox_avatar_url: profile.roblox_avatar_url,
       aurora_preset: profile.aurora_preset,
       aurora_intensity: profile.aurora_intensity,
+      panels: normalizePanels(profile.panels),
+      custom_html: profile.custom_html,
+      custom_css: profile.custom_css,
+      custom_code_enabled: profile.custom_code_enabled,
     }).eq("id", profile.id);
     setSaving(false);
     if (error) {
@@ -484,6 +495,33 @@ function Dashboard() {
               <button onClick={() => patch({ panel_background_url: null })}
                       className="text-xs text-destructive hover:underline">Remove panel image</button>
             )}
+          </Section>
+
+          {/* Panel layout */}
+          <Section title="Panel layout">
+            <PanelEditor panels={normalizePanels(profile.panels)} accent={profile.accent_color}
+                         onChange={next => patch({ panels: next })} />
+          </Section>
+
+          {/* Custom code */}
+          <Section title="Custom code">
+            <p className="text-xs text-muted-foreground">
+              Add your own HTML and CSS to your page. Scripts and event handlers are removed for safety.
+            </p>
+            <Toggle label="Use my custom code" checked={profile.custom_code_enabled}
+                    onChange={v => patch({ custom_code_enabled: v })} />
+            <Field label="HTML">
+              <textarea value={profile.custom_html ?? ""} rows={8} spellCheck={false}
+                        onChange={e => patch({ custom_html: e.target.value.slice(0, 20000) })}
+                        placeholder="<h2>Hello</h2>"
+                        className="w-full bg-input rounded-md px-3 py-2 text-xs font-mono border border-border" />
+            </Field>
+            <Field label="CSS">
+              <textarea value={profile.custom_css ?? ""} rows={8} spellCheck={false}
+                        onChange={e => patch({ custom_css: e.target.value.slice(0, 20000) })}
+                        placeholder=".aurora-custom h2 { color: #a855f7; }"
+                        className="w-full bg-input rounded-md px-3 py-2 text-xs font-mono border border-border" />
+            </Field>
           </Section>
 
           <BadgeManager profileId={profile.id} accent={profile.accent_color} />
