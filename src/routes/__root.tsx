@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Poppins:wght@400;600;800&family=Sora:wght@400..800&family=Rubik:wght@400..800&family=Playfair+Display:wght@400..800&family=Bebas+Neue&family=Great+Vibes&family=Press+Start+2P&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Poppins:wght@400;600;800&family=Sora:wght@400..800&family=Rubik:wght@400..800&family=Playfair+Display:wght@400..80[...]
       },
     ],
   }),
@@ -106,7 +106,7 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-const MAINTENANCE_MODE = false;
+const MAINTENANCE_MODE = true;
 
 // ─── Allowed routes during maintenance ───
 const ALLOWED_ROUTES = ['/status'];
